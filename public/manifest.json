@@ -1,0 +1,23 @@
+{
+  "name": "Legacy Vault - 数字保险箱",
+  "short_name": "Legacy Vault",
+  "description": "军事级加密数字保险箱，安全传递给你最爱的人",
+  "start_url": "/legacy-vault/",
+  "scope": "/legacy-vault/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/legacy-vault/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/legacy-vault/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

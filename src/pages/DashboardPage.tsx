@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const coverageRate = totalItems > 0 ? Math.round((allocatedItems / totalItems) * 100) : 0
 
   const weakPasswords = passwords.filter(p => checkPasswordStrength(p.password).score < 40)
+  const breachedPasswords = passwords.filter(p => p.breached)
   const duplicatePasswords = passwords.filter((p, i) =>
     passwords.findIndex(q => q.password === p.password) !== i
   )
@@ -172,7 +173,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Alerts */}
-      {(weakPasswords.length > 0 || coverageRate < 50) && (
+      {(weakPasswords.length > 0 || coverageRate < 50 || breachedPasswords.length > 0 || timeCapsules.length > 0) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -180,6 +181,17 @@ export default function DashboardPage() {
         >
           <h3 className="text-sm font-medium text-slate-400 mb-3">待办提醒</h3>
           <div className="space-y-2">
+            {breachedPasswords.length > 0 && (
+              <button
+                onClick={() => navigate('/audit')}
+                className="w-full p-3 rounded-xl bg-red-950/30 border border-red-500/20 flex items-center gap-3 text-left hover:bg-red-950/40 transition-colors"
+              >
+                <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                <span className="text-sm text-red-200/80">
+                  {breachedPasswords.length}个密码已出现在泄露数据库中，请立即更换
+                </span>
+              </button>
+            )}
             {weakPasswords.length > 0 && (
               <button
                 onClick={() => navigate('/audit')}

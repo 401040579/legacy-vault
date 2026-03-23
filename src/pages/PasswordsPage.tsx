@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus, Search, Eye, EyeOff, Copy, Trash2, Edit3, X,
   KeyRound, Globe, Mail, CreditCard, MessageSquare, Wrench,
-  Bitcoin, Shield, RefreshCw, Check
+  Bitcoin, Shield, RefreshCw, Check, AlertTriangle, ShoppingCart
 } from 'lucide-react'
 import { useStore, type PasswordEntry } from '../store'
 import { generatePassword, checkPasswordStrength } from '../utils/crypto'
@@ -13,6 +13,7 @@ const CATEGORIES = [
   { value: '社交', icon: MessageSquare },
   { value: '银行', icon: CreditCard },
   { value: '邮箱', icon: Mail },
+  { value: '购物', icon: ShoppingCart },
   { value: '工具', icon: Wrench },
   { value: '加密资产', icon: Bitcoin },
 ]
@@ -443,6 +444,12 @@ function PasswordRow({ pw, revealed, copied, guardians, onReveal, onCopy, onEdit
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm text-white font-medium truncate">{pw.title}</p>
+          {pw.breached && (
+            <span className="text-xs text-red-400 flex items-center gap-0.5 shrink-0 bg-red-500/10 px-1.5 py-0.5 rounded-full">
+              <AlertTriangle className="w-3 h-3" />
+              已泄露
+            </span>
+          )}
           {guardian && (
             <span className="text-xs text-emerald-400/70 flex items-center gap-0.5 shrink-0">
               <Shield className="w-3 h-3" />

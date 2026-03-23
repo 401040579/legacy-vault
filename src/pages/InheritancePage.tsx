@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users, Plus, X, Edit3, Trash2, Check, Eye,
-  KeyRound, StickyNote, Heart, Settings
+  KeyRound, StickyNote, Heart, Settings, Timer,
+  Shield, Clock, ChevronRight, Lock, Unlock, CheckCircle2
 } from 'lucide-react'
 import { useStore, type Guardian } from '../store'
 
@@ -15,7 +16,7 @@ const TRUST_LEVELS = [
 
 export default function InheritancePage() {
   const {
-    guardians, passwords, notes, inheritanceAllocations,
+    guardians, passwords, notes, timeCapsules, inheritanceAllocations,
     addGuardian, updateGuardian, deleteGuardian, setAllocations,
     verificationCycle, confirmationRequired,
     setVerificationCycle, setConfirmationRequired,
@@ -28,6 +29,8 @@ export default function InheritancePage() {
   const [showSettings, setShowSettings] = useState(false)
   const [showAllocation, setShowAllocation] = useState(false)
   const [allocGuardian, setAllocGuardian] = useState<string>('')
+  const [showVerificationDemo, setShowVerificationDemo] = useState(false)
+  const [verifyStep, setVerifyStep] = useState(0)
 
   // Form
   const [formName, setFormName] = useState('')
@@ -91,6 +94,14 @@ export default function InheritancePage() {
     setShowPreview(true)
   }
 
+  const verificationSteps = [
+    { title: '定期安心确认', desc: `每${verificationCycle}天发送一次确认请求`, days: '第1天', icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { title: '多渠道提醒', desc: '推送通知 + 邮件 + 短信，持续提醒', days: '第3-7天', icon: Shield, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { title: '联系提醒人', desc: '通知你指定的提醒联系人确认你的状态', days: '第7-14天', icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { title: '紧急联系人确认', desc: `需要${confirmationRequired}位守护人确认启动传承`, days: '第14-24天', icon: CheckCircle2, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+    { title: '冷却等待期', desc: '最终7天等待期，你仍可随时取消', days: '第24-31天', icon: Timer, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+  ]
+
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -125,10 +136,12 @@ export default function InheritancePage() {
             <p className="text-sm text-slate-500">还没有守护人。添加你信任的人，为重要的事做好安排。</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             {guardians.map(g => {
               const items = getGuardianItems(g.id)
-              const itemCount = items.passwords.length + items.notes.length
+              const pwCount = items.passwords.length
+              const noteCount = items.notes.length
+              const capsuleCount = timeCapsules.filter(tc => tc.recipientName === g.name).length
               return (
                 <motion.div
                   key={g.id}
@@ -154,16 +167,35 @@ export default function InheritancePage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-400">信任等级</span>
                       <span className={TRUST_LEVELS.find(t => t.value === g.trustLevel)?.color}>
                         {TRUST_LEVELS.find(t => t.value === g.trustLevel)?.label}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-400">已分配内容</span>
-                      <span className="text-white">{itemCount} 条</span>
+                  </div>
+
+                  {/* Allocation summary */}
+                  <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700 mb-3">
+                    <p className="text-xs text-slate-500 mb-2">
+                      {useStore.getState().userName || '你'}的{g.relationship}{g.name}将看到：
+                    </p>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="flex items-center gap-1 text-emerald-400">
+                        <KeyRound className="w-3 h-3" />
+                        {pwCount}条密码
+                      </span>
+                      <span className="flex items-center gap-1 text-blue-400">
+                        <StickyNote className="w-3 h-3" />
+                        {noteCount}篇笔记
+                      </span>
+                      {capsuleCount > 0 && (
+                        <span className="flex items-center gap-1 text-purple-400">
+                          <Timer className="w-3 h-3" />
+                          {capsuleCount}个胶囊
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -205,25 +237,81 @@ export default function InheritancePage() {
 
       {/* Coverage */}
       <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
-        <h3 className="text-sm font-medium text-slate-400 mb-3">传承覆盖率</h3>
-        <div className="h-3 bg-slate-800 rounded-full overflow-hidden mb-2">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${coverageRate}%` }}
-            transition={{ duration: 1 }}
-            className="h-full rounded-full bg-emerald-500"
-          />
+        <h3 className="text-sm font-medium text-slate-400 mb-4">传承覆盖率</h3>
+        <div className="flex items-center gap-6">
+          {/* Coverage ring */}
+          <div className="relative w-24 h-24 shrink-0">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#1e293b" strokeWidth="8" />
+              <motion.circle
+                cx="50" cy="50" r="40" fill="none"
+                stroke={coverageRate >= 80 ? '#10b981' : coverageRate >= 50 ? '#f59e0b' : '#3b82f6'}
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={`${coverageRate * 2.51} 251`}
+                initial={{ strokeDasharray: '0 251' }}
+                animate={{ strokeDasharray: `${coverageRate * 2.51} 251` }}
+                transition={{ duration: 1.2 }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-xl font-bold text-white">{coverageRate}%</span>
+            </div>
+          </div>
+          <div className="flex-1">
+            <p className="text-white font-medium mb-1">
+              {totalItems}条内容中有{allocatedItems}条已安排传承
+            </p>
+            <p className="text-xs text-slate-500 mb-3">
+              {coverageRate < 50 ? '建议将重要内容分配给守护人' : '覆盖率良好'}
+            </p>
+            {coverageRate >= 50 && (
+              <p className="text-sm text-emerald-400/70 flex items-center gap-1">
+                <Heart className="w-4 h-4" />
+                你已经为最爱的人做好了安排
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400">{totalItems}条内容中有{allocatedItems}条已安排传承</span>
-          <span className="text-emerald-400 font-medium">{coverageRate}%</span>
+      </div>
+
+      {/* Verification Timeline */}
+      <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-slate-400">生存验证协议 - 5阶段流程</h3>
+          <button
+            onClick={() => { setShowVerificationDemo(true); setVerifyStep(0); }}
+            className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+          >
+            模拟演示
+          </button>
         </div>
-        {coverageRate >= 50 && (
-          <p className="text-center text-sm text-emerald-400/70 mt-4 flex items-center justify-center gap-1">
-            <Heart className="w-4 h-4" />
-            你已经为最爱的人做好了安排
+        <div className="space-y-3">
+          {verificationSteps.map((vs, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="flex flex-col items-center">
+                <div className={`w-8 h-8 rounded-lg ${vs.bg} flex items-center justify-center`}>
+                  <vs.icon className={`w-4 h-4 ${vs.color}`} />
+                </div>
+                {i < verificationSteps.length - 1 && (
+                  <div className="w-0.5 h-6 bg-slate-800 mt-1" />
+                )}
+              </div>
+              <div className="flex-1 pb-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-white font-medium">{vs.title}</p>
+                  <span className="text-xs text-slate-500">{vs.days}</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">{vs.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/10">
+          <p className="text-xs text-emerald-400/80 text-center">
+            任何阶段你重新响应都会立即取消流程。总计不少于31天的安全保障期。
           </p>
-        )}
+        </div>
       </div>
 
       {/* Verification settings */}
@@ -410,43 +498,154 @@ export default function InheritancePage() {
         )}
       </AnimatePresence>
 
-      {/* Preview Modal */}
+      {/* Preview Modal - Enhanced Guardian View */}
       <AnimatePresence>
         {showPreview && previewGuardian && (
-          <Modal onClose={() => setShowPreview(false)} title="守护人视角预览">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-3xl mx-auto mb-3">
-                {previewGuardian.avatar}
+          <Modal onClose={() => setShowPreview(false)} title="以守护人身份预览">
+            <div className="space-y-6">
+              {/* Guardian login simulation */}
+              <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white font-medium">Legacy Vault - 守护人入口</p>
+                    <p className="text-xs text-slate-400">身份已验证: {previewGuardian.name} ({previewGuardian.relationship})</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-emerald-400">
+                  <Unlock className="w-3 h-3" />
+                  <span>密钥碎片已验证，正在解密...</span>
+                </div>
               </div>
-              <p className="text-white font-medium">{useStore.getState().userName} 留给你的内容</p>
-              <p className="text-sm text-slate-400 mt-1 italic">
-                "这些是我想要安全传递给你的重要内容"
+
+              {/* Header */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-3xl mx-auto mb-3">
+                  {previewGuardian.avatar}
+                </div>
+                <p className="text-white font-medium">{useStore.getState().userName || '用户'} 留给你的内容</p>
+                <p className="text-sm text-slate-400 mt-1 italic">
+                  "这些是我想要安全传递给你的重要内容"
+                </p>
+              </div>
+
+              {/* Allocated content */}
+              <div className="space-y-2">
+                {(() => {
+                  const items = getGuardianItems(previewGuardian.id)
+                  const capsules = timeCapsules.filter(tc => tc.recipientName === previewGuardian.name)
+                  const allItems = [
+                    ...items.passwords.map(p => ({ type: 'password' as const, title: p!.title, sub: p!.username, icon: KeyRound })),
+                    ...items.notes.map(n => ({ type: 'note' as const, title: n!.title, sub: '安全笔记', icon: StickyNote })),
+                    ...capsules.map(c => ({ type: 'capsule' as const, title: c.title, sub: '时间胶囊', icon: Timer })),
+                  ]
+                  if (allItems.length === 0) {
+                    return <p className="text-center text-slate-500 text-sm py-4">尚未分配任何内容</p>
+                  }
+                  return (
+                    <>
+                      <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
+                        <span>共 {allItems.length} 条内容</span>
+                        <span>|</span>
+                        <span>{items.passwords.length} 条密码</span>
+                        <span>{items.notes.length} 篇笔记</span>
+                        {capsules.length > 0 && <span>{capsules.length} 个胶囊</span>}
+                      </div>
+                      {allItems.map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 border border-slate-700">
+                          <item.icon className="w-4 h-4 text-emerald-400" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm text-white block truncate">{item.title}</span>
+                            <span className="text-xs text-slate-500">{item.sub}</span>
+                          </div>
+                          <button className="text-xs text-emerald-400 px-2 py-1 bg-emerald-500/10 rounded-lg shrink-0">查看</button>
+                        </div>
+                      ))}
+                    </>
+                  )
+                })()}
+              </div>
+
+              <p className="text-center text-xs text-slate-600 mt-4">
+                此为模拟预览。实际接收时需要身份验证和密钥碎片联合解密。
               </p>
             </div>
+          </Modal>
+        )}
+      </AnimatePresence>
 
-            <div className="space-y-2">
-              {(() => {
-                const items = getGuardianItems(previewGuardian.id)
-                const allItems = [
-                  ...items.passwords.map(p => ({ type: 'password', title: p!.title, icon: KeyRound })),
-                  ...items.notes.map(n => ({ type: 'note', title: n!.title, icon: StickyNote })),
-                ]
-                if (allItems.length === 0) {
-                  return <p className="text-center text-slate-500 text-sm py-4">尚未分配任何内容</p>
-                }
-                return allItems.map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 border border-slate-700">
-                    <item.icon className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm text-white">{item.title}</span>
-                    <button className="ml-auto text-xs text-emerald-400 px-2 py-1 bg-emerald-500/10 rounded-lg">查看</button>
+      {/* Verification Demo Modal */}
+      <AnimatePresence>
+        {showVerificationDemo && (
+          <Modal onClose={() => setShowVerificationDemo(false)} title="生存验证流程模拟">
+            <div className="space-y-4">
+              {verificationSteps.map((vs, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: i <= verifyStep ? 1 : 0.3, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`flex items-start gap-3 p-3 rounded-xl transition-colors ${
+                    i <= verifyStep ? 'bg-slate-800/50' : ''
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg ${i <= verifyStep ? vs.bg : 'bg-slate-800'} flex items-center justify-center shrink-0`}>
+                    <vs.icon className={`w-4 h-4 ${i <= verifyStep ? vs.color : 'text-slate-600'}`} />
                   </div>
-                ))
-              })()}
-            </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className={`text-sm font-medium ${i <= verifyStep ? 'text-white' : 'text-slate-600'}`}>{vs.title}</p>
+                      <span className={`text-xs ${i <= verifyStep ? 'text-slate-400' : 'text-slate-700'}`}>{vs.days}</span>
+                    </div>
+                    <p className={`text-xs ${i <= verifyStep ? 'text-slate-400' : 'text-slate-700'}`}>{vs.desc}</p>
+                  </div>
+                  {i < verifyStep && <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-2" />}
+                </motion.div>
+              ))}
 
-            <p className="text-center text-xs text-slate-600 mt-4">
-              此为模拟预览。实际接收时需要身份验证和密钥解密。
-            </p>
+              {verifyStep === 2 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-center"
+                >
+                  <button
+                    onClick={() => { setVerifyStep(0); setShowVerificationDemo(false); }}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    确认存活 (取消流程)
+                  </button>
+                  <p className="text-xs text-emerald-400/70 mt-2">点击后流程立即终止</p>
+                </motion.div>
+              )}
+
+              <div className="flex justify-between mt-4">
+                <button
+                  onClick={() => setVerifyStep(Math.max(0, verifyStep - 1))}
+                  disabled={verifyStep === 0}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-sm rounded-xl transition-colors"
+                >
+                  上一步
+                </button>
+                {verifyStep < verificationSteps.length - 1 ? (
+                  <button
+                    onClick={() => setVerifyStep(verifyStep + 1)}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm rounded-xl transition-colors flex items-center gap-1"
+                  >
+                    下一步 <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowVerificationDemo(false)}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm rounded-xl transition-colors"
+                  >
+                    完成演示
+                  </button>
+                )}
+              </div>
+            </div>
           </Modal>
         )}
       </AnimatePresence>

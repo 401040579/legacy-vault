@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import OnboardingOverlay from './OnboardingOverlay'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: '首页' },
@@ -18,7 +19,7 @@ const navItems = [
 ]
 
 export default function AppLayout() {
-  const { logout, userName } = useStore()
+  const { logout, userName, onboardingComplete } = useStore()
   const navigate = useNavigate()
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -144,6 +145,9 @@ export default function AppLayout() {
           ))}
         </div>
       </nav>
+
+      {/* Onboarding overlay */}
+      {!onboardingComplete && <OnboardingOverlay />}
 
       {/* Search overlay */}
       <AnimatePresence>

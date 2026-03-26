@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useStore } from './store'
+import { isLoggedIn, startHeartbeat, stopHeartbeat } from './api/client'
 import LandingPage from './pages/LandingPage'
 import SetupPage from './pages/SetupPage'
 import LoginPage from './pages/LoginPage'
@@ -21,6 +23,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { isSetupComplete, isAuthenticated } = useStore()
+
+  // Start heartbeat when authenticated and backend is connected
+  useEffect(() => {
+    if (isAuthenticated && isLoggedIn()) {
+      startHeartbeat()
+    }
+    return () => {
+      stopHeartbeat()
+    }
+  }, [isAuthenticated])
 
   return (
     <Routes>

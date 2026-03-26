@@ -10,20 +10,37 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
   const navigate = useNavigate()
-  const { login, userName } = useStore()
+  const { login, loginWithBackend, userName, userEmail } = useStore()
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError('')
     setIsUnlocking(true)
 
-    setTimeout(() => {
-      if (login(password)) {
-        navigate('/dashboard')
-      } else {
-        setError('密码不对，请再试一次。')
-        setIsUnlocking(false)
+    // Try local login first
+    if (login(password)) {
+      // Also try backend login (non-blocking, for token refresh)
+      if (userEmail) {
+        loginWithBackend(userEmail, password).catch(() => {})
       }
-    }, 800)
+      navigate('/dashboard')
+      return
+    }
+
+    // If local login fails, try backend
+    if (userEmail) {
+      try {
+        const backendOk = await loginWithBackend(userEmail, password)
+        if (backendOk) {
+          navigate('/dashboard')
+          return
+        }
+      } catch {
+        // Backend unavailable
+      }
+    }
+
+    setError('密码不对，请再试一次。')
+    setIsUnlocking(false)
   }
 
   return (

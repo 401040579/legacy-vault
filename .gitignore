@@ -6,3 +6,8 @@ dist/
 *.log
 .vscode/
 .idea/
+
+# SAM / AWS
+backend/.aws-sam/
+backend/shared/nodejs/node_modules/
+samconfig.toml

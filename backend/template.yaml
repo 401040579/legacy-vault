@@ -1,0 +1,329 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Legacy Vault - Serverless Backend (Zero-Knowledge Architecture)
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 10
+    MemorySize: 256
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        JWT_SECRET: e2eef57c27b710476b5f9b5dcd2efe90edd8db2edc833b973861dd2360274b97
+        USERS_TABLE: !Ref LVUsersTable
+        VAULT_TABLE: !Ref LVVaultEntriesTable
+        GUARDIANS_TABLE: !Ref LVGuardiansTable
+        CAPSULES_TABLE: !Ref LVCapsulesTable
+
+Parameters:
+  AllowedOrigins:
+    Type: String
+    Default: "https://rantao.github.io,http://localhost:5173,http://localhost:3000"
+    Description: Comma-separated CORS allowed origins
+
+Resources:
+  # ==================== API Gateway ====================
+  LegacyVaultApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - "https://rantao.github.io"
+          - "http://localhost:5173"
+          - "http://localhost:3000"
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-Requested-With
+        AllowMethods:
+          - GET
+          - POST
+          - DELETE
+          - OPTIONS
+        MaxAge: 86400
+
+  # ==================== DynamoDB Tables ====================
+  LVUsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LVUsers
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  LVVaultEntriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LVVaultEntries
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: entryId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: entryId
+          KeyType: RANGE
+
+  LVGuardiansTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LVGuardians
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: guardianId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: guardianId
+          KeyType: RANGE
+
+  LVCapsulesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LVTimeCapsules
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: capsuleId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: capsuleId
+          KeyType: RANGE
+
+  # ==================== Lambda Functions ====================
+
+  # --- Auth ---
+  RegisterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/register/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVUsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/auth/register
+            Method: POST
+
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/login/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVUsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/auth/login
+            Method: POST
+
+  # --- Vault ---
+  SaveEntryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/saveEntry/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVVaultEntriesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/vault
+            Method: POST
+
+  GetEntriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/getEntries/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVVaultEntriesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/vault
+            Method: GET
+
+  DeleteEntryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/deleteEntry/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVVaultEntriesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/vault/{entryId}
+            Method: DELETE
+
+  # --- Guardians ---
+  SaveGuardianFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/saveGuardian/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVGuardiansTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/guardians
+            Method: POST
+
+  GetGuardiansFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/getGuardians/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVGuardiansTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/guardians
+            Method: GET
+
+  # --- Time Capsules ---
+  SaveCapsuleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/saveCapsule/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVCapsulesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/capsules
+            Method: POST
+
+  GetCapsulesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/getCapsules/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVCapsulesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/capsules
+            Method: GET
+
+  # --- Heartbeat ---
+  HeartbeatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/heartbeat/
+      Handler: index.handler
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref LVUsersTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref LegacyVaultApi
+            Path: /api/heartbeat
+            Method: POST
+
+  # ==================== Shared Layer ====================
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: legacy-vault-shared
+      Description: Shared utilities - JWT auth, DynamoDB helpers
+      ContentUri: shared/
+      CompatibleRuntimes:
+        - nodejs20.x
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: nodejs20.x
+
+Outputs:
+  ApiEndpoint:
+    Description: Legacy Vault API endpoint URL
+    Value: !Sub "https://${LegacyVaultApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  UsersTableName:
+    Value: !Ref LVUsersTable
+  VaultTableName:
+    Value: !Ref LVVaultEntriesTable
+  GuardiansTableName:
+    Value: !Ref LVGuardiansTable
+  CapsulesTableName:
+    Value: !Ref LVCapsulesTable

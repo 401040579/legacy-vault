@@ -15,17 +15,35 @@ export default function SetupPage() {
   const [mnemonic] = useState(() => generateMnemonic())
   const [savedConfirmed, setSavedConfirmed] = useState(false)
   const [mnemonicCopied, setMnemonicCopied] = useState(false)
+  const [, setRegisterError] = useState('')
+  const [, setIsRegistering] = useState(false)
   const navigate = useNavigate()
-  const { setupAccount, seedDemoData } = useStore()
+  const { setupAccount, seedDemoData, registerWithBackend } = useStore()
 
   const strength = checkPasswordStrength(password)
   const canProceedStep1 = email.trim() && name.trim()
   const canProceedStep2 = password.length >= 8 && password === confirmPassword
   const canProceedStep3 = savedConfirmed
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    setIsRegistering(true)
+    setRegisterError('')
+
+    // Always set up local account
     setupAccount(name, btoa(password), mnemonic)
     seedDemoData()
+
+    // Try to register with backend (non-blocking — offline-first)
+    try {
+      const result = await registerWithBackend(email, name, password)
+      if (!result.success) {
+        console.warn('Backend registration skipped:', result.error)
+      }
+    } catch {
+      console.warn('Backend unavailable, continuing in offline mode')
+    }
+
+    setIsRegistering(false)
     navigate('/dashboard')
   }
 

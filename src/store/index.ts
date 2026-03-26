@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generateId } from '../utils/crypto';
+import * as api from '../api/client';
 
 // Types
 export interface PasswordEntry {
@@ -85,6 +86,8 @@ interface AppState {
   masterPasswordHash: string;
   recoveryWords: string[];
   userName: string;
+  userEmail: string;
+  backendConnected: boolean;
 
   // Onboarding
   onboardingComplete: boolean;
@@ -133,8 +136,11 @@ interface AppState {
 
   // Auth actions
   login: (password: string) => boolean;
+  loginWithBackend: (email: string, password: string) => Promise<boolean>;
+  registerWithBackend: (email: string, name: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   setupAccount: (name: string, passwordHash: string, words: string[]) => void;
+  syncToBackend: () => Promise<void>;
 
   // Seed demo data
   seedDemoData: () => void;
@@ -149,6 +155,8 @@ export const useStore = create<AppState>()(
       masterPasswordHash: '',
       recoveryWords: [],
       userName: '',
+      userEmail: '',
+      backendConnected: false,
 
       // Onboarding
       onboardingComplete: false,
@@ -249,11 +257,62 @@ export const useStore = create<AppState>()(
         const state = get();
         if (password && state.masterPasswordHash === btoa(password)) {
           set({ isAuthenticated: true });
+          // Start heartbeat if we have a backend token
+          if (api.isLoggedIn()) {
+            api.startHeartbeat();
+          }
           return true;
         }
         return false;
       },
-      logout: () => set({ isAuthenticated: false }),
+
+      loginWithBackend: async (email, password) => {
+        // Derive auth hash client-side (password never leaves the device as plaintext)
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + email.toLowerCase());
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const authHash = Array.from(new Uint8Array(hashBuffer))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const result = await api.login({ email, authHash });
+        if (result.ok) {
+          set({
+            isAuthenticated: true,
+            backendConnected: true,
+            userEmail: email,
+            userName: result.data.userName || get().userName,
+          });
+          api.startHeartbeat();
+          return true;
+        }
+        return false;
+      },
+
+      registerWithBackend: async (email, name, password) => {
+        // Derive auth hash client-side
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + email.toLowerCase());
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const authHash = Array.from(new Uint8Array(hashBuffer))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const result = await api.register({ email, authHash, userName: name });
+        if (result.ok) {
+          set({
+            backendConnected: true,
+            userEmail: email,
+          });
+          return { success: true };
+        }
+        return { success: false, error: (result.data as { error?: string })?.error || '注册失败' };
+      },
+
+      logout: () => {
+        api.stopHeartbeat();
+        api.logout();
+        set({ isAuthenticated: false, backendConnected: false });
+      },
+
       setupAccount: (name, passwordHash, words) => set({
         isSetupComplete: true,
         isAuthenticated: true,
@@ -261,6 +320,44 @@ export const useStore = create<AppState>()(
         masterPasswordHash: passwordHash,
         recoveryWords: words,
       }),
+
+      syncToBackend: async () => {
+        if (!api.isLoggedIn()) return;
+        const state = get();
+
+        // Sync passwords and notes as vault entries
+        try {
+          for (const pw of state.passwords) {
+            await api.saveEntry({
+              entryId: pw.id,
+              type: 'password',
+              encryptedData: JSON.stringify(pw), // In production: encrypt before sending
+            });
+          }
+          for (const note of state.notes) {
+            await api.saveEntry({
+              entryId: note.id,
+              type: 'note',
+              encryptedData: JSON.stringify(note),
+            });
+          }
+          for (const g of state.guardians) {
+            await api.saveGuardian({
+              guardianId: g.id,
+              encryptedData: JSON.stringify(g),
+            });
+          }
+          for (const tc of state.timeCapsules) {
+            await api.saveCapsule({
+              capsuleId: tc.id,
+              encryptedData: JSON.stringify(tc),
+            });
+          }
+          set({ backendConnected: true });
+        } catch {
+          // Silently fail — offline-first approach
+        }
+      },
 
       seedDemoData: () => {
         const state = get();

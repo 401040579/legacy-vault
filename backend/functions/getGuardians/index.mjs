@@ -4,9 +4,9 @@
  * Returns all guardian entries for the authenticated user.
  */
 
-import { authenticate } from '/opt/nodejs/jwt.mjs';
-import { queryItems } from '/opt/nodejs/db.mjs';
-import { success, error } from '/opt/nodejs/response.mjs';
+import { authenticate } from './jwt.mjs';
+import { queryItems } from './db.mjs';
+import { success, error } from './response.mjs';
 
 const GUARDIANS_TABLE = process.env.GUARDIANS_TABLE;
 

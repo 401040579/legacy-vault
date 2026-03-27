@@ -10,9 +10,9 @@
  */
 
 import { randomUUID, createHash } from 'node:crypto';
-import { sign } from '/opt/nodejs/jwt.mjs';
-import { putItem, queryIndex } from '/opt/nodejs/db.mjs';
-import { success, error, parseBody } from '/opt/nodejs/response.mjs';
+import { sign } from './jwt.mjs';
+import { putItem, queryIndex } from './db.mjs';
+import { success, error, parseBody } from './response.mjs';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 

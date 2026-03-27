@@ -10,9 +10,9 @@
  */
 
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { sign } from '/opt/nodejs/jwt.mjs';
-import { queryIndex, updateItem } from '/opt/nodejs/db.mjs';
-import { success, error, parseBody } from '/opt/nodejs/response.mjs';
+import { sign } from './jwt.mjs';
+import { queryIndex, updateItem } from './db.mjs';
+import { success, error, parseBody } from './response.mjs';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 

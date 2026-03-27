@@ -123,8 +123,6 @@ Resources:
     Properties:
       CodeUri: functions/register/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVUsersTable
@@ -141,8 +139,6 @@ Resources:
     Properties:
       CodeUri: functions/login/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVUsersTable
@@ -160,8 +156,6 @@ Resources:
     Properties:
       CodeUri: functions/saveEntry/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVVaultEntriesTable
@@ -178,8 +172,6 @@ Resources:
     Properties:
       CodeUri: functions/getEntries/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVVaultEntriesTable
@@ -196,8 +188,6 @@ Resources:
     Properties:
       CodeUri: functions/deleteEntry/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVVaultEntriesTable
@@ -215,8 +205,6 @@ Resources:
     Properties:
       CodeUri: functions/saveGuardian/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVGuardiansTable
@@ -233,8 +221,6 @@ Resources:
     Properties:
       CodeUri: functions/getGuardians/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVGuardiansTable
@@ -252,8 +238,6 @@ Resources:
     Properties:
       CodeUri: functions/saveCapsule/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVCapsulesTable
@@ -270,8 +254,6 @@ Resources:
     Properties:
       CodeUri: functions/getCapsules/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVCapsulesTable
@@ -289,8 +271,6 @@ Resources:
     Properties:
       CodeUri: functions/heartbeat/
       Handler: index.handler
-      Layers:
-        - !Ref SharedLayer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LVUsersTable
@@ -301,19 +281,6 @@ Resources:
             ApiId: !Ref LegacyVaultApi
             Path: /api/heartbeat
             Method: POST
-
-  # ==================== Shared Layer ====================
-  SharedLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: legacy-vault-shared
-      Description: Shared utilities - JWT auth, DynamoDB helpers
-      ContentUri: shared/
-      CompatibleRuntimes:
-        - nodejs20.x
-      RetentionPolicy: Delete
-    Metadata:
-      BuildMethod: nodejs20.x
 
 Outputs:
   ApiEndpoint:

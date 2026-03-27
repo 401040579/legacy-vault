@@ -10,9 +10,9 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { authenticate } from '/opt/nodejs/jwt.mjs';
-import { putItem } from '/opt/nodejs/db.mjs';
-import { success, error, parseBody } from '/opt/nodejs/response.mjs';
+import { authenticate } from './jwt.mjs';
+import { putItem } from './db.mjs';
+import { success, error, parseBody } from './response.mjs';
 
 const VAULT_TABLE = process.env.VAULT_TABLE;
 

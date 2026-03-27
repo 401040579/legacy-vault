@@ -5,9 +5,9 @@
  * Data is still ciphertext — the client decrypts locally.
  */
 
-import { authenticate } from '/opt/nodejs/jwt.mjs';
-import { queryItems } from '/opt/nodejs/db.mjs';
-import { success, error } from '/opt/nodejs/response.mjs';
+import { authenticate } from './jwt.mjs';
+import { queryItems } from './db.mjs';
+import { success, error } from './response.mjs';
 
 const VAULT_TABLE = process.env.VAULT_TABLE;
 

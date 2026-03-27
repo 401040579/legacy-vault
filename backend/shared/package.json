@@ -1,9 +1,0 @@
-{
-  "name": "legacy-vault-shared",
-  "version": "1.0.0",
-  "description": "Shared utilities for Legacy Vault Lambda functions",
-  "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.700.0",
-    "@aws-sdk/lib-dynamodb": "^3.700.0"
-  }
-}

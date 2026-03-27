@@ -8,9 +8,9 @@
  * This is the backend component of the living verification protocol.
  */
 
-import { authenticate } from '/opt/nodejs/jwt.mjs';
-import { updateItem } from '/opt/nodejs/db.mjs';
-import { success, error } from '/opt/nodejs/response.mjs';
+import { authenticate } from './jwt.mjs';
+import { updateItem } from './db.mjs';
+import { success, error } from './response.mjs';
 
 const USERS_TABLE = process.env.USERS_TABLE;
 

@@ -7,11 +7,13 @@ import {
 import { useStore } from '../store'
 import { useState } from 'react'
 import { checkPasswordStrength } from '../utils/crypto'
+import { useI18n, getLocaleForDate } from '../i18n'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { userName, passwords, notes, guardians, timeCapsules, inheritanceAllocations } = useStore()
   const [revealedPw, setRevealedPw] = useState<string | null>(null)
+  const { t, locale } = useI18n()
 
   // Compute security score
   const totalItems = passwords.length + notes.length
@@ -32,23 +34,25 @@ export default function DashboardPage() {
   securityScore = Math.max(0, Math.min(100, securityScore))
 
   const greetHour = new Date().getHours()
-  const greeting = greetHour < 12 ? '早上好' : greetHour < 18 ? '下午好' : '晚上好'
+  const greeting = greetHour < 12 ? t('dashboard.morning') : greetHour < 18 ? t('dashboard.afternoon') : t('dashboard.evening')
 
   const recentItems = [
     ...passwords.map(p => ({ type: 'password' as const, id: p.id, title: p.title, sub: p.username, time: p.updatedAt, password: p.password })),
-    ...notes.map(n => ({ type: 'note' as const, id: n.id, title: n.title, sub: '安全笔记', time: n.updatedAt, password: '' })),
+    ...notes.map(n => ({ type: 'note' as const, id: n.id, title: n.title, sub: t('common.secureNote'), time: n.updatedAt, password: '' })),
   ].sort((a, b) => b.time - a.time).slice(0, 5)
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
   }
 
+  const securityLabel = securityScore >= 80 ? t('dashboard.excellent') : securityScore >= 60 ? t('dashboard.good') : t('dashboard.needsImprovement')
+
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
       {/* Greeting */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl font-bold text-white">{greeting}，{userName || '用户'}</h1>
-        <p className="text-slate-400 text-sm mt-1">你的保险箱一切安全</p>
+        <h1 className="text-2xl font-bold text-white">{greeting}{locale === 'zh' ? '\uff0c' : ', '}{userName || t('common.user')}</h1>
+        <p className="text-slate-400 text-sm mt-1">{t('dashboard.vaultSecure')}</p>
       </motion.div>
 
       {/* Security Overview */}
@@ -61,7 +65,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3 mb-4">
           <Shield className="w-6 h-6 text-emerald-400" />
           <div>
-            <h2 className="text-white font-semibold">安全等级：{securityScore >= 80 ? '优秀' : securityScore >= 60 ? '良好' : '需要改善'}</h2>
+            <h2 className="text-white font-semibold">{t('dashboard.securityLevel')}{locale === 'zh' ? '\uff1a' : ': '}{securityLabel}</h2>
           </div>
         </div>
 
@@ -80,19 +84,19 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
             <p className="text-2xl font-bold text-white">{passwords.length}</p>
-            <p className="text-xs text-slate-400">密码</p>
+            <p className="text-xs text-slate-400">{t('dashboard.passwords')}</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-white">{notes.length}</p>
-            <p className="text-xs text-slate-400">笔记</p>
+            <p className="text-xs text-slate-400">{t('dashboard.notes')}</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-white">{guardians.length}</p>
-            <p className="text-xs text-slate-400">守护人</p>
+            <p className="text-xs text-slate-400">{t('dashboard.guardians')}</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-white">{coverageRate}%</p>
-            <p className="text-xs text-slate-400">遗产覆盖率</p>
+            <p className="text-xs text-slate-400">{t('dashboard.inheritanceCoverage')}</p>
           </div>
         </div>
       </motion.div>
@@ -103,13 +107,13 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h3 className="text-sm font-medium text-slate-400 mb-3">快速操作</h3>
+        <h3 className="text-sm font-medium text-slate-400 mb-3">{t('dashboard.quickActions')}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { icon: KeyRound, label: '新增密码', color: 'text-emerald-400', bg: 'bg-emerald-500/10', to: '/passwords' },
-            { icon: StickyNote, label: '新增笔记', color: 'text-blue-400', bg: 'bg-blue-500/10', to: '/notes' },
-            { icon: Users, label: '管理守护人', color: 'text-purple-400', bg: 'bg-purple-500/10', to: '/inheritance' },
-            { icon: Timer, label: '新建胶囊', color: 'text-amber-400', bg: 'bg-amber-500/10', to: '/capsules' },
+            { icon: KeyRound, label: t('dashboard.addPassword'), color: 'text-emerald-400', bg: 'bg-emerald-500/10', to: '/passwords' },
+            { icon: StickyNote, label: t('dashboard.addNote'), color: 'text-blue-400', bg: 'bg-blue-500/10', to: '/notes' },
+            { icon: Users, label: t('dashboard.manageGuardians'), color: 'text-purple-400', bg: 'bg-purple-500/10', to: '/inheritance' },
+            { icon: Timer, label: t('dashboard.newCapsule'), color: 'text-amber-400', bg: 'bg-amber-500/10', to: '/capsules' },
           ].map((item, i) => (
             <button
               key={i}
@@ -131,7 +135,7 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h3 className="text-sm font-medium text-slate-400 mb-3">最近访问</h3>
+        <h3 className="text-sm font-medium text-slate-400 mb-3">{t('dashboard.recentAccess')}</h3>
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl divide-y divide-slate-800">
           {recentItems.map(item => (
             <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/30 transition-colors">
@@ -179,7 +183,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <h3 className="text-sm font-medium text-slate-400 mb-3">待办提醒</h3>
+          <h3 className="text-sm font-medium text-slate-400 mb-3">{t('dashboard.alerts')}</h3>
           <div className="space-y-2">
             {breachedPasswords.length > 0 && (
               <button
@@ -188,7 +192,7 @@ export default function DashboardPage() {
               >
                 <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
                 <span className="text-sm text-red-200/80">
-                  {breachedPasswords.length}个密码已出现在泄露数据库中，请立即更换
+                  {t('dashboard.breachedAlert', { count: breachedPasswords.length })}
                 </span>
               </button>
             )}
@@ -199,7 +203,7 @@ export default function DashboardPage() {
               >
                 <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
                 <span className="text-sm text-amber-200/80">
-                  {weakPasswords.length}个密码安全性较弱，建议更新
+                  {t('dashboard.weakAlert', { count: weakPasswords.length })}
                 </span>
               </button>
             )}
@@ -210,7 +214,7 @@ export default function DashboardPage() {
               >
                 <Users className="w-5 h-5 text-blue-400 shrink-0" />
                 <span className="text-sm text-blue-200/80">
-                  还有{totalItems - allocatedItems}条内容未设置守护人
+                  {t('dashboard.unallocatedAlert', { count: totalItems - allocatedItems })}
                 </span>
               </button>
             )}
@@ -218,8 +222,10 @@ export default function DashboardPage() {
               <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-500/20 flex items-center gap-3">
                 <Timer className="w-5 h-5 text-purple-400 shrink-0" />
                 <span className="text-sm text-purple-200/80">
-                  时间胶囊"{timeCapsules[0].title}" 将在{' '}
-                  {new Date(timeCapsules[0].deliveryDate).toLocaleDateString('zh-CN')} 送达
+                  {t('dashboard.capsuleDelivery', {
+                    title: timeCapsules[0].title,
+                    date: new Date(timeCapsules[0].deliveryDate).toLocaleDateString(getLocaleForDate(locale))
+                  })}
                 </span>
               </div>
             )}
@@ -231,7 +237,7 @@ export default function DashboardPage() {
       <div className="pt-4 text-center">
         <p className="text-xs text-slate-600 flex items-center justify-center gap-1">
           <Shield className="w-3 h-3 text-emerald-600" />
-          安全连接 · 零知识加密 · 数据已加密存储
+          {t('dashboard.securityFooter')}
         </p>
       </div>
     </div>

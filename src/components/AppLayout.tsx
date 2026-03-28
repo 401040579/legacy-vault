@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useStore } from '../store'
+import { useI18n } from '../i18n'
 import {
   LayoutDashboard, KeyRound, StickyNote, Users, Timer,
   ShieldAlert, Shield, LogOut, Lock, Search
@@ -7,24 +8,26 @@ import {
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import OnboardingOverlay from './OnboardingOverlay'
-
-const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: '首页' },
-  { to: '/passwords', icon: KeyRound, label: '密码' },
-  { to: '/notes', icon: StickyNote, label: '笔记' },
-  { to: '/inheritance', icon: Users, label: '传承' },
-  { to: '/capsules', icon: Timer, label: '胶囊' },
-  { to: '/emergency', icon: ShieldAlert, label: '紧急' },
-  { to: '/audit', icon: Shield, label: '审计' },
-]
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function AppLayout() {
   const { logout, userName, onboardingComplete } = useStore()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const passwords = useStore(s => s.passwords)
   const notes = useStore(s => s.notes)
+
+  const navItems = [
+    { to: '/dashboard', icon: LayoutDashboard, label: t('nav.home') },
+    { to: '/passwords', icon: KeyRound, label: t('nav.passwords') },
+    { to: '/notes', icon: StickyNote, label: t('nav.notes') },
+    { to: '/inheritance', icon: Users, label: t('nav.inheritance') },
+    { to: '/capsules', icon: Timer, label: t('nav.capsules') },
+    { to: '/emergency', icon: ShieldAlert, label: t('nav.emergency') },
+    { to: '/audit', icon: Shield, label: t('nav.audit') },
+  ]
 
   const handleLogout = () => {
     logout()
@@ -38,7 +41,7 @@ export default function AppLayout() {
     ).map(p => ({ type: 'password' as const, title: p.title, sub: p.username })),
     ...notes.filter(n =>
       n.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ).map(n => ({ type: 'note' as const, title: n.title, sub: '安全笔记' })),
+    ).map(n => ({ type: 'note' as const, title: n.title, sub: t('common.secureNote') })),
   ] : []
 
   return (
@@ -52,7 +55,7 @@ export default function AppLayout() {
             </div>
             <div>
               <h1 className="font-bold text-white text-lg">Legacy Vault</h1>
-              <p className="text-xs text-slate-400">零知识加密</p>
+              <p className="text-xs text-slate-400">{t('common.zeroKnowledge')}</p>
             </div>
           </div>
         </div>
@@ -63,7 +66,7 @@ export default function AppLayout() {
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 text-slate-400 text-sm hover:bg-slate-800 transition-colors"
           >
             <Search className="w-4 h-4" />
-            搜索...
+            {t('common.searchPlaceholder')}
           </button>
         </div>
 
@@ -92,12 +95,13 @@ export default function AppLayout() {
               {userName ? userName[0] : 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white truncate">{userName || '用户'}</p>
+              <p className="text-sm text-white truncate">{userName || t('common.user')}</p>
               <p className="text-xs text-emerald-400 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-                已加密
+                {t('common.encrypted')}
               </p>
             </div>
+            <LanguageSwitcher />
             <button onClick={handleLogout} className="text-slate-400 hover:text-white transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
@@ -114,6 +118,7 @@ export default function AppLayout() {
             <span className="font-bold text-white">Legacy Vault</span>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <button onClick={() => setShowSearch(true)} className="text-slate-400">
               <Search className="w-5 h-5" />
             </button>
@@ -171,7 +176,7 @@ export default function AppLayout() {
                 <input
                   autoFocus
                   type="text"
-                  placeholder="搜索密码、笔记..."
+                  placeholder={t('common.searchPasswordsNotes')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent text-white outline-none placeholder:text-slate-500"
@@ -199,7 +204,7 @@ export default function AppLayout() {
                 </div>
               )}
               {searchQuery && searchResults.length === 0 && (
-                <p className="p-4 text-center text-slate-400 text-sm">未找到匹配结果</p>
+                <p className="p-4 text-center text-slate-400 text-sm">{t('common.noResults')}</p>
               )}
             </motion.div>
           </motion.div>

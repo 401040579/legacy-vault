@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, Shield, ArrowRight } from 'lucide-react'
 import { useStore } from '../store'
+import { useI18n } from '../i18n'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function LoginPage() {
   const [password, setPassword] = useState('')
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const [isUnlocking, setIsUnlocking] = useState(false)
   const navigate = useNavigate()
   const { login, loginWithBackend, userName, userEmail } = useStore()
+  const { t } = useI18n()
 
   const handleLogin = async () => {
     setError('')
@@ -39,12 +42,15 @@ export default function LoginPage() {
       }
     }
 
-    setError('密码不对，请再试一次。')
+    setError(t('login.wrongPassword'))
     setIsUnlocking(false)
   }
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -62,8 +68,8 @@ export default function LoginPage() {
               <Lock className="w-10 h-10 text-emerald-400" />
             )}
           </motion.div>
-          <h1 className="text-2xl font-bold text-white mb-1">欢迎回来{userName ? `，${userName}` : ''}</h1>
-          <p className="text-slate-400 text-sm">输入主密码解锁你的保险箱</p>
+          <h1 className="text-2xl font-bold text-white mb-1">{t('login.welcomeBack')}{userName ? `${userName.match(/^[a-zA-Z]/) ? ', ' : '\uff0c'}${userName}` : ''}</h1>
+          <p className="text-slate-400 text-sm">{t('login.enterMasterPw')}</p>
         </motion.div>
 
         <motion.div
@@ -74,14 +80,14 @@ export default function LoginPage() {
         >
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-slate-300 mb-1.5 block">主密码</label>
+              <label className="text-sm text-slate-300 mb-1.5 block">{t('login.masterPwLabel')}</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => { setPassword(e.target.value); setError(''); }}
                   onKeyDown={e => e.key === 'Enter' && password && handleLogin()}
-                  placeholder="输入主密码"
+                  placeholder={t('login.masterPwPlaceholder')}
                   autoFocus
                   className="w-full px-4 py-3 pr-12 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
@@ -116,11 +122,11 @@ export default function LoginPage() {
                     transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                     className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                   />
-                  解锁中...
+                  {t('login.unlocking')}
                 </>
               ) : (
                 <>
-                  解锁保险箱 <ArrowRight className="w-4 h-4" />
+                  {t('login.unlock')} <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
@@ -129,7 +135,7 @@ export default function LoginPage() {
           <div className="mt-6 pt-6 border-t border-slate-800">
             <p className="text-xs text-slate-500 text-center flex items-center justify-center gap-1">
               <Shield className="w-3 h-3 text-emerald-500" />
-              零知识加密 · 你的密码永远不会离开此设备
+              {t('login.footer')}
             </p>
           </div>
         </motion.div>

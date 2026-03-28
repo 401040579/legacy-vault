@@ -7,26 +7,28 @@ import {
 } from 'lucide-react'
 import { useStore, type PasswordEntry } from '../store'
 import { generatePassword, checkPasswordStrength } from '../utils/crypto'
-
-const CATEGORIES = [
-  { value: '全部', icon: KeyRound },
-  { value: '社交', icon: MessageSquare },
-  { value: '银行', icon: CreditCard },
-  { value: '邮箱', icon: Mail },
-  { value: '购物', icon: ShoppingCart },
-  { value: '工具', icon: Wrench },
-  { value: '加密资产', icon: Bitcoin },
-]
+import { useI18n } from '../i18n'
 
 export default function PasswordsPage() {
   const { passwords, guardians, addPassword, updatePassword, deletePassword } = useStore()
+  const { t, locale } = useI18n()
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('全部')
+  const [category, setCategory] = useState(locale === 'zh' ? '全部' : 'all')
   const [revealedId, setRevealedId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showGenerator, setShowGenerator] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const CATEGORIES = [
+    { value: t('passwords.all'), icon: KeyRound, key: '全部' },
+    { value: t('passwords.social'), icon: MessageSquare, key: '社交' },
+    { value: t('passwords.banking'), icon: CreditCard, key: '银行' },
+    { value: t('passwords.email'), icon: Mail, key: '邮箱' },
+    { value: t('passwords.shopping'), icon: ShoppingCart, key: '购物' },
+    { value: t('passwords.tools'), icon: Wrench, key: '工具' },
+    { value: t('passwords.crypto'), icon: Bitcoin, key: '加密资产' },
+  ]
 
   // Form state
   const [formTitle, setFormTitle] = useState('')
@@ -45,14 +47,20 @@ export default function PasswordsPage() {
   const [genNumbers, setGenNumbers] = useState(true)
   const [genSymbols, setGenSymbols] = useState(true)
 
+  const isAllCategory = category === t('passwords.all')
+
   const filtered = passwords.filter(p => {
-    if (category !== '全部' && p.category !== category) return false
+    if (!isAllCategory) {
+      // Find the internal key for the selected display category
+      const selectedCat = CATEGORIES.find(c => c.value === category)
+      if (selectedCat && p.category !== selectedCat.key) return false
+    }
     if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.username.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
   const grouped = CATEGORIES.slice(1).reduce((acc, cat) => {
-    const items = filtered.filter(p => p.category === cat.value)
+    const items = filtered.filter(p => p.category === cat.key)
     if (items.length > 0) acc[cat.value] = items
     return acc
   }, {} as Record<string, PasswordEntry[]>)
@@ -125,15 +133,15 @@ export default function PasswordsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">密码管理器</h1>
-          <p className="text-sm text-slate-400 mt-1">{passwords.length} 个密码已安全存储</p>
+          <h1 className="text-2xl font-bold text-white">{t('passwords.title')}</h1>
+          <p className="text-sm text-slate-400 mt-1">{t('passwords.countLabel', { count: passwords.length })}</p>
         </div>
         <button
           onClick={() => openForm()}
           className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          新增密码
+          {t('passwords.addPassword')}
         </button>
       </div>
 
@@ -145,7 +153,7 @@ export default function PasswordsPage() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="搜索密码..."
+            placeholder={t('passwords.searchPlaceholder')}
             className="w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-800 rounded-xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
@@ -168,7 +176,7 @@ export default function PasswordsPage() {
       </div>
 
       {/* Password List */}
-      {category === '全部' ? (
+      {isAllCategory ? (
         Object.entries(grouped).map(([cat, items]) => (
           <div key={cat} className="mb-6">
             <h3 className="text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
@@ -209,7 +217,7 @@ export default function PasswordsPage() {
             ))
           ) : (
             <p className="p-8 text-center text-slate-500 text-sm">
-              {search ? '未找到匹配结果' : '你的保险箱是空的。保存第一个密码，开始守护你的数字生活。'}
+              {search ? t('passwords.emptySearch') : t('passwords.emptyVault')}
             </p>
           )}
         </div>
@@ -234,7 +242,7 @@ export default function PasswordsPage() {
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
                 <h3 className="text-lg font-semibold text-white">
-                  {editingId ? '编辑密码' : '新增密码'}
+                  {editingId ? t('passwords.editPassword') : t('passwords.newPassword')}
                 </h3>
                 <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-white">
                   <X className="w-5 h-5" />
@@ -243,16 +251,16 @@ export default function PasswordsPage() {
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="text-sm text-slate-300 mb-1 block">标题</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.titleLabel')}</label>
                   <input
                     value={formTitle}
                     onChange={e => setFormTitle(e.target.value)}
-                    placeholder="例如：Gmail"
+                    placeholder={t('passwords.titlePlaceholder')}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 mb-1 block">用户名/邮箱</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.usernameLabel')}</label>
                   <input
                     value={formUsername}
                     onChange={e => setFormUsername(e.target.value)}
@@ -261,18 +269,18 @@ export default function PasswordsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 mb-1 block">密码</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.passwordLabel')}</label>
                   <div className="flex gap-2">
                     <input
                       value={formPassword}
                       onChange={e => setFormPassword(e.target.value)}
-                      placeholder="输入密码"
+                      placeholder={t('passwords.passwordPlaceholder')}
                       className="flex-1 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm font-mono placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                     />
                     <button
                       onClick={() => setShowGenerator(!showGenerator)}
                       className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500/20 transition-colors"
-                      title="生成密码"
+                      title={t('passwords.generatePassword')}
                     >
                       <RefreshCw className="w-4 h-4" />
                     </button>
@@ -299,7 +307,7 @@ export default function PasswordsPage() {
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 space-y-3">
                         <div>
                           <div className="flex items-center justify-between text-sm mb-1">
-                            <span className="text-slate-300">长度</span>
+                            <span className="text-slate-300">{t('passwords.genLength')}</span>
                             <span className="text-emerald-400">{genLength}</span>
                           </div>
                           <input
@@ -313,10 +321,10 @@ export default function PasswordsPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           {[
-                            { label: '大写字母', checked: genUpper, set: setGenUpper },
-                            { label: '小写字母', checked: genLower, set: setGenLower },
-                            { label: '数字', checked: genNumbers, set: setGenNumbers },
-                            { label: '符号', checked: genSymbols, set: setGenSymbols },
+                            { label: t('passwords.genUppercase'), checked: genUpper, set: setGenUpper },
+                            { label: t('passwords.genLowercase'), checked: genLower, set: setGenLower },
+                            { label: t('passwords.genNumbers'), checked: genNumbers, set: setGenNumbers },
+                            { label: t('passwords.genSymbols'), checked: genSymbols, set: setGenSymbols },
                           ].map(opt => (
                             <label key={opt.label} className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
                               <input
@@ -333,7 +341,7 @@ export default function PasswordsPage() {
                           onClick={handleGeneratePassword}
                           className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium rounded-lg transition-colors"
                         >
-                          生成密码
+                          {t('passwords.genBtn')}
                         </button>
                       </div>
                     </motion.div>
@@ -341,7 +349,7 @@ export default function PasswordsPage() {
                 </AnimatePresence>
 
                 <div>
-                  <label className="text-sm text-slate-300 mb-1 block">网站地址</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.urlLabel')}</label>
                   <input
                     value={formUrl}
                     onChange={e => setFormUrl(e.target.value)}
@@ -350,23 +358,23 @@ export default function PasswordsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 mb-1 block">分类</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.categoryLabel')}</label>
                   <select
                     value={formCategory}
                     onChange={e => setFormCategory(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500"
                   >
                     {CATEGORIES.slice(1).map(c => (
-                      <option key={c.value} value={c.value}>{c.value}</option>
+                      <option key={c.key} value={c.key}>{c.value}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 mb-1 block">备注</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.notesLabel')}</label>
                   <textarea
                     value={formNotes}
                     onChange={e => setFormNotes(e.target.value)}
-                    placeholder="可选备注..."
+                    placeholder={t('passwords.notesPlaceholder')}
                     rows={2}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
                   />
@@ -374,13 +382,13 @@ export default function PasswordsPage() {
 
                 {/* Guardian settings */}
                 <div className="pt-2 border-t border-slate-800">
-                  <label className="text-sm text-slate-300 mb-1 block">守护人（可选）</label>
+                  <label className="text-sm text-slate-300 mb-1 block">{t('passwords.guardianLabel')}</label>
                   <select
                     value={formGuardian}
                     onChange={e => setFormGuardian(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="">不设置守护人</option>
+                    <option value="">{t('passwords.noGuardian')}</option>
                     {guardians.map(g => (
                       <option key={g.id} value={g.id}>{g.avatar} {g.name} ({g.relationship})</option>
                     ))}
@@ -390,7 +398,7 @@ export default function PasswordsPage() {
                       <input
                         value={formGuardianNote}
                         onChange={e => setFormGuardianNote(e.target.value)}
-                        placeholder="给守护人的备注..."
+                        placeholder={t('passwords.guardianNotePlaceholder')}
                         className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                       />
                     </div>
@@ -400,14 +408,14 @@ export default function PasswordsPage() {
 
               <div className="px-6 py-4 border-t border-slate-800 flex justify-end gap-3">
                 <button onClick={() => setShowForm(false)} className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors">
-                  取消
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={!formTitle || !formPassword}
                   className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-medium rounded-xl transition-colors"
                 >
-                  {editingId ? '保存修改' : '安全存储'}
+                  {editingId ? t('passwords.saveChanges') : t('passwords.secureStore')}
                 </button>
               </div>
             </motion.div>
@@ -430,6 +438,7 @@ function PasswordRow({ pw, revealed, copied, guardians, onReveal, onCopy, onEdit
 }) {
   const guardian = pw.guardianId ? guardians.find(g => g.id === pw.guardianId) : null
   const strength = checkPasswordStrength(pw.password)
+  const { t } = useI18n()
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/30 transition-colors group">
@@ -447,13 +456,13 @@ function PasswordRow({ pw, revealed, copied, guardians, onReveal, onCopy, onEdit
           {pw.breached && (
             <span className="text-xs text-red-400 flex items-center gap-0.5 shrink-0 bg-red-500/10 px-1.5 py-0.5 rounded-full">
               <AlertTriangle className="w-3 h-3" />
-              已泄露
+              {t('passwords.breached')}
             </span>
           )}
           {guardian && (
             <span className="text-xs text-emerald-400/70 flex items-center gap-0.5 shrink-0">
               <Shield className="w-3 h-3" />
-              已托付
+              {t('passwords.entrusted')}
             </span>
           )}
         </div>
@@ -462,16 +471,16 @@ function PasswordRow({ pw, revealed, copied, guardians, onReveal, onCopy, onEdit
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="w-1.5 h-1.5 rounded-full mr-1" style={{ backgroundColor: strength.color }} title={strength.label} />
-        <button onClick={onReveal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title={revealed ? '隐藏' : '显示'}>
+        <button onClick={onReveal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title={revealed ? t('passwords.hide') : t('passwords.show')}>
           {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
-        <button onClick={onCopy} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title="复制">
+        <button onClick={onCopy} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title={t('common.copy')}>
           {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
         </button>
-        <button onClick={onEdit} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title="编辑">
+        <button onClick={onEdit} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title={t('common.edit')}>
           <Edit3 className="w-4 h-4" />
         </button>
-        <button onClick={onDelete} className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors" title="删除">
+        <button onClick={onDelete} className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors" title={t('common.delete')}>
           <Trash2 className="w-4 h-4" />
         </button>
       </div>

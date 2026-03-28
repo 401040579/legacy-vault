@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, StickyNote, Lock, Unlock, Shield, Trash2, Eye, Edit3 } from 'lucide-react'
 import { useStore, type NoteEntry } from '../store'
 import Markdown from 'react-markdown'
+import { useI18n, getLocaleForDate } from '../i18n'
 
 export default function NotesPage() {
   const { notes, guardians, addNote, updateNote, deleteNote } = useStore()
+  const { t, locale } = useI18n()
   const [selectedNote, setSelectedNote] = useState<NoteEntry | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [showNew, setShowNew] = useState(false)
@@ -77,15 +79,15 @@ export default function NotesPage() {
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">安全笔记</h1>
-          <p className="text-sm text-slate-400 mt-1">写下你想珍藏的任何事。只有你能看到。</p>
+          <h1 className="text-2xl font-bold text-white">{t('notes.title')}</h1>
+          <p className="text-sm text-slate-400 mt-1">{t('notes.subtitle')}</p>
         </div>
         <button
           onClick={startNew}
           className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          新建笔记
+          {t('notes.newNote')}
         </button>
       </div>
 
@@ -95,7 +97,7 @@ export default function NotesPage() {
           {notes.length === 0 ? (
             <div className="p-8 text-center bg-slate-900/50 border border-slate-800 rounded-2xl">
               <StickyNote className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">写下你想珍藏的任何事。只有你能看到。</p>
+              <p className="text-sm text-slate-500">{t('notes.emptyState')}</p>
             </div>
           ) : (
             notes.map(note => {
@@ -131,7 +133,7 @@ export default function NotesPage() {
                     <Lock className="w-3.5 h-3.5 text-emerald-500/50 shrink-0 mt-0.5" />
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-slate-600">{new Date(note.updatedAt).toLocaleDateString('zh-CN')}</span>
+                    <span className="text-xs text-slate-600">{new Date(note.updatedAt).toLocaleDateString(getLocaleForDate(locale))}</span>
                     {guardian && (
                       <span className="text-xs text-emerald-500/60 flex items-center gap-0.5">
                         <Shield className="w-3 h-3" /> {guardian.name}
@@ -171,7 +173,7 @@ export default function NotesPage() {
                         >
                           <Lock className="w-8 h-8 text-emerald-400 mx-auto" />
                         </motion.div>
-                        <p className="text-emerald-400 text-sm mt-2">加密中...</p>
+                        <p className="text-emerald-400 text-sm mt-2">{t('notes.encrypting')}</p>
                       </div>
                     </motion.div>
                   )}
@@ -183,7 +185,7 @@ export default function NotesPage() {
                     <input
                       value={editTitle}
                       onChange={e => setEditTitle(e.target.value)}
-                      placeholder="笔记标题"
+                      placeholder={t('notes.titlePlaceholder')}
                       className="text-lg font-semibold text-white bg-transparent outline-none flex-1 placeholder:text-slate-500"
                     />
                   ) : (
@@ -224,7 +226,7 @@ export default function NotesPage() {
                       <textarea
                         value={editContent}
                         onChange={e => setEditContent(e.target.value)}
-                        placeholder="支持 Markdown 格式..."
+                        placeholder={t('notes.contentPlaceholder')}
                         className={`bg-transparent text-white text-sm leading-relaxed outline-none resize-none placeholder:text-slate-500 ${showPreview ? 'w-1/2' : 'w-full'}`}
                         style={{ minHeight: 280 }}
                       />
@@ -249,7 +251,7 @@ export default function NotesPage() {
                       onChange={e => setEditGuardian(e.target.value)}
                       className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500"
                     >
-                      <option value="">不设置守护人</option>
+                      <option value="">{t('notes.noGuardian')}</option>
                       {guardians.map(g => (
                         <option key={g.id} value={g.id}>{g.avatar} {g.name}</option>
                       ))}
@@ -259,7 +261,7 @@ export default function NotesPage() {
                         onClick={() => { setIsEditing(false); if (showNew) setShowNew(false); }}
                         className="px-4 py-2 text-slate-400 text-sm hover:text-white transition-colors"
                       >
-                        取消
+                        {t('common.cancel')}
                       </button>
                       <button
                         onClick={showNew ? handleCreate : handleSave}
@@ -267,7 +269,7 @@ export default function NotesPage() {
                         className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-1.5"
                       >
                         <Lock className="w-3.5 h-3.5" />
-                        安全存储
+                        {t('notes.secureStore')}
                       </button>
                     </div>
                   </div>
@@ -281,7 +283,7 @@ export default function NotesPage() {
               >
                 <div className="text-center">
                   <StickyNote className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                  <p className="text-slate-500 text-sm">选择一条笔记查看，或创建新笔记</p>
+                  <p className="text-slate-500 text-sm">{t('notes.selectNote')}</p>
                 </div>
               </motion.div>
             )}

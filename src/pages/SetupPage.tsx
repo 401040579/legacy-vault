@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, ArrowRight, ArrowLeft, Check, Shield, Copy, Download, Eye, EyeOff, AlertTriangle } from 'lucide-react'
 import { useStore } from '../store'
 import { checkPasswordStrength, generateMnemonic } from '../utils/crypto'
+import { useI18n } from '../i18n'
 
 export default function SetupPage() {
   const [step, setStep] = useState(0)
@@ -19,6 +20,7 @@ export default function SetupPage() {
   const [, setIsRegistering] = useState(false)
   const navigate = useNavigate()
   const { setupAccount, seedDemoData, registerWithBackend } = useStore()
+  const { t } = useI18n()
 
   const strength = checkPasswordStrength(password)
   const canProceedStep1 = email.trim() && name.trim()
@@ -33,7 +35,7 @@ export default function SetupPage() {
     setupAccount(name, btoa(password), mnemonic)
     seedDemoData()
 
-    // Try to register with backend (non-blocking — offline-first)
+    // Try to register with backend (non-blocking -- offline-first)
     try {
       const result = await registerWithBackend(email, name, password)
       if (!result.success) {
@@ -54,10 +56,10 @@ export default function SetupPage() {
   }
 
   const steps = [
-    { title: '基本信息', icon: '1' },
-    { title: '创建主密码', icon: '2' },
-    { title: '保存恢复词', icon: '3' },
-    { title: '开始使用', icon: '4' },
+    { title: t('setup.steps.0'), icon: '1' },
+    { title: t('setup.steps.1'), icon: '2' },
+    { title: t('setup.steps.2'), icon: '3' },
+    { title: t('setup.steps.3'), icon: '4' },
   ]
 
   return (
@@ -69,7 +71,7 @@ export default function SetupPage() {
             <Lock className="w-6 h-6 text-emerald-400" />
             <span className="text-xl font-bold text-white">Legacy Vault</span>
           </div>
-          <p className="text-slate-400 text-sm">创建你的安全保险箱</p>
+          <p className="text-slate-400 text-sm">{t('setup.createVault')}</p>
         </div>
 
         {/* Steps indicator */}
@@ -103,23 +105,23 @@ export default function SetupPage() {
             {step === 0 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">欢迎来到 Legacy Vault</h2>
-                  <p className="text-slate-400">我们只用邮箱发送重要通知，不会发送垃圾邮件</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">{t('setup.welcomeTitle')}</h2>
+                  <p className="text-slate-400">{t('setup.welcomeDesc')}</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-slate-300 mb-1.5 block">你的名字</label>
+                    <label className="text-sm text-slate-300 mb-1.5 block">{t('setup.nameLabel')}</label>
                     <input
                       type="text"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      placeholder="张明"
+                      placeholder={t('setup.namePlaceholder')}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-slate-300 mb-1.5 block">邮箱地址</label>
+                    <label className="text-sm text-slate-300 mb-1.5 block">{t('setup.emailLabel')}</label>
                     <input
                       type="email"
                       value={email}
@@ -135,7 +137,7 @@ export default function SetupPage() {
                   onClick={() => setStep(1)}
                   className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
-                  下一步 <ArrowRight className="w-4 h-4" />
+                  {t('common.next')} <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -143,19 +145,19 @@ export default function SetupPage() {
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">创建主密码</h2>
-                  <p className="text-slate-400 text-sm">这是打开你保险箱的唯一钥匙。请选择一个你记得住但别人猜不到的密码。</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">{t('setup.createMasterPw')}</h2>
+                  <p className="text-slate-400 text-sm">{t('setup.createMasterPwDesc')}</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-slate-300 mb-1.5 block">主密码</label>
+                    <label className="text-sm text-slate-300 mb-1.5 block">{t('setup.masterPwLabel')}</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        placeholder="至少8位，建议12位以上"
+                        placeholder={t('setup.masterPwPlaceholder')}
                         className="w-full px-4 py-3 pr-12 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                       />
                       <button
@@ -171,7 +173,7 @@ export default function SetupPage() {
                     {password && (
                       <div className="mt-3">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-slate-400">密码强度</span>
+                          <span className="text-slate-400">{t('setup.pwStrength')}</span>
                           <span style={{ color: strength.color }}>{strength.label}</span>
                         </div>
                         <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -187,16 +189,16 @@ export default function SetupPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-slate-300 mb-1.5 block">确认密码</label>
+                    <label className="text-sm text-slate-300 mb-1.5 block">{t('setup.confirmPwLabel')}</label>
                     <input
                       type="password"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
-                      placeholder="再次输入密码"
+                      placeholder={t('setup.confirmPwPlaceholder')}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                     />
                     {confirmPassword && password !== confirmPassword && (
-                      <p className="text-red-400 text-xs mt-1">密码不匹配</p>
+                      <p className="text-red-400 text-xs mt-1">{t('setup.pwMismatch')}</p>
                     )}
                   </div>
                 </div>
@@ -204,7 +206,7 @@ export default function SetupPage() {
                 <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700">
                   <p className="text-xs text-slate-400 flex items-center gap-2">
                     <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
-                    我们使用零知识加密，永远不会存储你的密码。即使是我们的工程师也无法看到。
+                    {t('setup.zeroKnowledgeNote')}
                   </p>
                 </div>
 
@@ -217,7 +219,7 @@ export default function SetupPage() {
                     onClick={() => setStep(2)}
                     className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    下一步 <ArrowRight className="w-4 h-4" />
+                    {t('common.next')} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -226,15 +228,15 @@ export default function SetupPage() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">保存紧急恢复词</h2>
-                  <p className="text-slate-400 text-sm">这是你唯一的备用钥匙，请像保管家门钥匙一样保管它。</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">{t('setup.saveRecoveryTitle')}</h2>
+                  <p className="text-slate-400 text-sm">{t('setup.saveRecoveryDesc')}</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/20">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-200/80">
-                      请务必保存这些恢复词！如果你忘记主密码，这是唯一的恢复方式。我们无法帮你重置密码。
+                      {t('setup.recoveryWarning')}
                     </p>
                   </div>
                 </div>
@@ -251,11 +253,11 @@ export default function SetupPage() {
                 <div className="flex gap-3">
                   <button onClick={copyMnemonic} className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm rounded-xl transition-colors flex items-center justify-center gap-2">
                     <Copy className="w-4 h-4" />
-                    {mnemonicCopied ? '已复制' : '复制'}
+                    {mnemonicCopied ? t('common.copied') : t('setup.copyBtn')}
                   </button>
                   <button className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm rounded-xl transition-colors flex items-center justify-center gap-2">
                     <Download className="w-4 h-4" />
-                    下载PDF
+                    {t('setup.downloadPdf')}
                   </button>
                 </div>
 
@@ -267,7 +269,7 @@ export default function SetupPage() {
                     className="mt-1 w-4 h-4 rounded border-slate-600 text-emerald-500 focus:ring-emerald-500 bg-slate-800"
                   />
                   <span className="text-sm text-slate-300">
-                    我已安全保存恢复词，并理解丢失后数据将无法恢复
+                    {t('setup.recoveryConfirm')}
                   </span>
                 </label>
 
@@ -280,7 +282,7 @@ export default function SetupPage() {
                     onClick={() => setStep(3)}
                     className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    下一步 <ArrowRight className="w-4 h-4" />
+                    {t('common.next')} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -296,8 +298,8 @@ export default function SetupPage() {
                   >
                     <Shield className="w-8 h-8 text-emerald-400" />
                   </motion.div>
-                  <h2 className="text-2xl font-bold text-white mb-2">保险箱已就绪</h2>
-                  <p className="text-slate-400">你的数字保险箱已创建完毕。选择你的第一步：</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">{t('setup.vaultReady')}</h2>
+                  <p className="text-slate-400">{t('setup.vaultReadyDesc')}</p>
                 </div>
 
                 <div className="grid gap-3">
@@ -310,8 +312,8 @@ export default function SetupPage() {
                         <Lock className="w-5 h-5 text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">进入保险箱</p>
-                        <p className="text-slate-400 text-sm">查看示例数据，探索所有功能</p>
+                        <p className="text-white font-medium">{t('setup.enterVault')}</p>
+                        <p className="text-slate-400 text-sm">{t('setup.enterVaultDesc')}</p>
                       </div>
                       <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-emerald-400 transition-colors" />
                     </div>
@@ -319,7 +321,7 @@ export default function SetupPage() {
                 </div>
 
                 <p className="text-center text-xs text-slate-500">
-                  已加载演示数据，帮助你快速了解功能
+                  {t('setup.demoDataLoaded')}
                 </p>
               </div>
             )}

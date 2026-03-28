@@ -7,6 +7,8 @@ import {
   Key, Layers, Zap, FileText, X
 } from 'lucide-react'
 import { simulateEncrypt, checkPasswordStrength } from '../utils/crypto'
+import { useI18n } from '../i18n'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -45,6 +47,7 @@ export default function LandingPage() {
 
 function Header({ onStart, onWhitepaper }: { onStart: () => void; onWhitepaper: () => void }) {
   const [scrolled, setScrolled] = useState(false)
+  const { t } = useI18n()
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', h)
@@ -58,90 +61,60 @@ function Header({ onStart, onWhitepaper }: { onStart: () => void; onWhitepaper: 
           <span className="text-xl font-bold text-white">Legacy Vault</span>
         </div>
         <nav className="hidden md:flex items-center gap-8 text-sm text-slate-300">
-          <a href="#features" className="hover:text-white transition">功能</a>
-          <a href="#demo" className="hover:text-white transition">加密演示</a>
-          <a href="#pricing" className="hover:text-white transition">定价</a>
-          <button onClick={onWhitepaper} className="hover:text-white transition">安全白皮书</button>
+          <a href="#features" className="hover:text-white transition">{t('landing.features')}</a>
+          <a href="#demo" className="hover:text-white transition">{t('landing.encryptDemo')}</a>
+          <a href="#pricing" className="hover:text-white transition">{t('landing.pricing')}</a>
+          <button onClick={onWhitepaper} className="hover:text-white transition">{t('landing.whitepaper')}</button>
         </nav>
-        <button onClick={onStart} className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-xl text-sm transition-colors">
-          开始保护
-        </button>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <button onClick={onStart} className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-xl text-sm transition-colors">
+            {t('landing.startProtecting')}
+          </button>
+        </div>
       </div>
     </header>
   )
 }
 
 function HeroSection({ onStart }: { onStart: () => void }) {
+  const { t } = useI18n()
   return (
     <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
-      {/* Glow effects */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8">
           <ShieldCheck className="w-4 h-4" />
-          零知识加密 · 端到端保护
+          {t('landing.badge')}
         </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-6"
-        >
-          你最珍贵的一切
-          <br />
-          <span className="text-emerald-400">安全传递</span>给你最爱的人
+        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-6">
+          {t('landing.heroTitle1')}<br /><span className="text-emerald-400">{t('landing.heroTitle2')}</span>{t('landing.heroTitle3')}
         </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
-        >
-          军事级加密保险箱 · 智能遗产传承 · 只有你能打开
-          <br />
-          <span className="text-slate-300">连我们也看不到你的内容</span>
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          {t('landing.heroSub1')}<br /><span className="text-slate-300">{t('landing.heroSub2')}</span>
         </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <button
-            onClick={onStart}
-            className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-2xl text-lg transition-all hover:shadow-lg hover:shadow-emerald-500/25 flex items-center justify-center gap-2"
-          >
-            免费开始守护
-            <ArrowRight className="w-5 h-5" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onClick={onStart}
+            className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-2xl text-lg transition-all hover:shadow-lg hover:shadow-emerald-500/25 flex items-center justify-center gap-2">
+            {t('landing.ctaStart')}<ArrowRight className="w-5 h-5" />
           </button>
-          <a
-            href="#demo"
-            className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-2xl text-lg transition-colors flex items-center justify-center gap-2"
-          >
-            <Eye className="w-5 h-5" />
-            查看加密演示
+          <a href="#demo"
+            className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-2xl text-lg transition-colors flex items-center justify-center gap-2">
+            <Eye className="w-5 h-5" />{t('landing.ctaDemo')}
           </a>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-16 flex justify-center"
-        >
-          <a href="#features" className="text-slate-500 animate-bounce">
-            <ChevronDown className="w-6 h-6" />
-          </a>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-16 flex justify-center">
+          <a href="#features" className="text-slate-500 animate-bounce"><ChevronDown className="w-6 h-6" /></a>
         </motion.div>
       </div>
     </section>
@@ -149,21 +122,22 @@ function HeroSection({ onStart }: { onStart: () => void }) {
 }
 
 function FeaturesSection() {
+  const { t } = useI18n()
   const features = [
-    { icon: Lock, title: '安全存储', desc: '密码、文件、照片、视频...AES-256军事级加密，只有你能打开', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { icon: Users, title: '智能传承', desc: '设定谁在什么时候收到什么内容。为你爱的人做好安排', color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { icon: Timer, title: '时间胶囊', desc: '给未来的自己或他人写信。在你指定的时间安全送达', color: 'text-purple-400', bg: 'bg-purple-500/10' },
-    { icon: Fingerprint, title: '零知识架构', desc: '你的数据在设备上加密后再上传。连我们的工程师也看不到', color: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { icon: ShieldCheck, title: '生存验证', desc: '智能安心确认机制。多阶段渐进式，31天内不会误触发', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-    { icon: Shield, title: '紧急传递', desc: '设置紧急联系人，在需要时安全访问你授权的内容', color: 'text-rose-400', bg: 'bg-rose-500/10' },
+    { icon: Lock, title: t('landing.featureSecureStorage'), desc: t('landing.featureSecureStorageDesc'), color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { icon: Users, title: t('landing.featureInheritance'), desc: t('landing.featureInheritanceDesc'), color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { icon: Timer, title: t('landing.featureTimeCapsule'), desc: t('landing.featureTimeCapsuleDesc'), color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { icon: Fingerprint, title: t('landing.featureZeroKnowledge'), desc: t('landing.featureZeroKnowledgeDesc'), color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { icon: ShieldCheck, title: t('landing.featureSurvival'), desc: t('landing.featureSurvivalDesc'), color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+    { icon: Shield, title: t('landing.featureEmergency'), desc: t('landing.featureEmergencyDesc'), color: 'text-rose-400', bg: 'bg-rose-500/10' },
   ]
 
   return (
     <section id="features" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">你的数字生活，值得最好的保护</h2>
-          <p className="text-slate-400 text-lg">一个保险箱，守护一切</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.featuresTitle')}</h2>
+          <p className="text-slate-400 text-lg">{t('landing.featuresSub')}</p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -190,6 +164,7 @@ function FeaturesSection() {
 }
 
 function EncryptDemo() {
+  const { t } = useI18n()
   const [input, setInput] = useState('')
   const [encrypted, setEncrypted] = useState('')
   const [isEncrypting, setIsEncrypting] = useState(false)
@@ -234,8 +209,8 @@ function EncryptDemo() {
     <section id="demo" className="py-24 px-6 bg-slate-900/30">
       <div className="max-w-3xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">亲眼见证加密过程</h2>
-          <p className="text-slate-400 text-lg">输入任何文字，看它如何被军事级加密保护</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.encryptTitle')}</h2>
+          <p className="text-slate-400 text-lg">{t('landing.encryptSub')}</p>
         </motion.div>
 
         <motion.div
@@ -244,13 +219,13 @@ function EncryptDemo() {
         >
           <div className="space-y-6">
             <div>
-              <label className="text-sm text-slate-400 mb-2 block">输入你想加密的文字</label>
+              <label className="text-sm text-slate-400 mb-2 block">{t('landing.encryptLabel')}</label>
               <div className="flex gap-3">
                 <input
                   type="text"
                   value={input}
                   onChange={e => { setInput(e.target.value); setEncrypted(''); setShowDecrypted(false); setChars([]); }}
-                  placeholder="例如：这是我最重要的秘密..."
+                  placeholder={t('landing.encryptPlaceholder')}
                   className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
                 <button
@@ -259,7 +234,7 @@ function EncryptDemo() {
                   className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
                 >
                   <Lock className="w-4 h-4" />
-                  加密
+                  {t('landing.encryptBtn')}
                 </button>
               </div>
             </div>
@@ -267,7 +242,7 @@ function EncryptDemo() {
             {/* Encryption animation */}
             {chars.length > 0 && !encrypted && (
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                <p className="text-xs text-slate-500 mb-2">AES-256-GCM 加密中...</p>
+                <p className="text-xs text-slate-500 mb-2">{t('landing.encryptingLabel')}</p>
                 <div className="font-mono text-lg flex flex-wrap gap-0.5">
                   {chars.map((c, i) => (
                     <span
@@ -298,7 +273,7 @@ function EncryptDemo() {
                   <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/20">
                     <div className="flex items-center gap-2 text-emerald-400 text-sm mb-2">
                       <ShieldCheck className="w-4 h-4" />
-                      已加密 (AES-256-GCM)
+                      {t('landing.encryptedLabel')}
                     </div>
                     <p className="font-mono text-sm text-emerald-300/70 break-all">{encrypted}</p>
                   </div>
@@ -309,7 +284,7 @@ function EncryptDemo() {
                       className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition-colors flex items-center gap-2"
                     >
                       {showDecrypted ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      {showDecrypted ? '隐藏明文' : '用密钥解密'}
+                      {showDecrypted ? t('landing.hideDecrypted') : t('landing.decryptBtn')}
                     </button>
                   </div>
 
@@ -319,13 +294,13 @@ function EncryptDemo() {
                       animate={{ opacity: 1 }}
                       className="p-4 rounded-xl bg-slate-800/50 border border-slate-700"
                     >
-                      <p className="text-xs text-slate-500 mb-1">解密结果：</p>
+                      <p className="text-xs text-slate-500 mb-1">{t('landing.decryptResult')}</p>
                       <p className="text-white">{input}</p>
                     </motion.div>
                   )}
 
                   <p className="text-center text-slate-500 text-sm mt-4">
-                    这就是 Legacy Vault 保护你数据的方式。即使是我们也看不到。
+                    {t('landing.encryptFooter')}
                   </p>
                 </motion.div>
               )}
@@ -338,17 +313,18 @@ function EncryptDemo() {
 }
 
 function KeyDerivationDemo() {
+  const { t } = useI18n()
   const [started, setStarted] = useState(false)
   const [step, setStep] = useState(0)
   const [animDone, setAnimDone] = useState(false)
   const timeoutsRef = useRef<number[]>([])
 
   const steps = [
-    { label: '主密码', value: 'MyP@ssw0rd!2024', icon: Key, color: 'text-amber-400', bg: 'bg-amber-500/10', desc: '你记忆的密码' },
-    { label: 'Argon2id 密钥派生', value: '迭代 65536 次 + 盐值 + 内存硬化', icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/10', desc: '防暴力破解' },
-    { label: '主密钥 (256位)', value: 'a7f3...9e2b (256-bit master key)', icon: Shield, color: 'text-blue-400', bg: 'bg-blue-500/10', desc: '设备上生成' },
-    { label: '加密密钥 (AES-256)', value: 'HKDF 派生每个条目独立密钥', icon: Layers, color: 'text-emerald-400', bg: 'bg-emerald-500/10', desc: '每条数据独立加密' },
-    { label: '密文存储', value: 'IV + 认证标签 + 密文', icon: Lock, color: 'text-cyan-400', bg: 'bg-cyan-500/10', desc: '只有你能解密' },
+    { label: t('landing.kdStep1Label'), value: t('landing.kdStep1Value'), icon: Key, color: 'text-amber-400', bg: 'bg-amber-500/10', desc: t('landing.kdStep1Desc') },
+    { label: t('landing.kdStep2Label'), value: t('landing.kdStep2Value'), icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/10', desc: t('landing.kdStep2Desc') },
+    { label: t('landing.kdStep3Label'), value: t('landing.kdStep3Value'), icon: Shield, color: 'text-blue-400', bg: 'bg-blue-500/10', desc: t('landing.kdStep3Desc') },
+    { label: t('landing.kdStep4Label'), value: t('landing.kdStep4Value'), icon: Layers, color: 'text-emerald-400', bg: 'bg-emerald-500/10', desc: t('landing.kdStep4Desc') },
+    { label: t('landing.kdStep5Label'), value: t('landing.kdStep5Value'), icon: Lock, color: 'text-cyan-400', bg: 'bg-cyan-500/10', desc: t('landing.kdStep5Desc') },
   ]
 
   const handleStart = () => {
@@ -373,8 +349,8 @@ function KeyDerivationDemo() {
     <section className="py-24 px-6">
       <div className="max-w-3xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">密钥派生过程</h2>
-          <p className="text-slate-400 text-lg">从你的密码到不可破解的加密密钥，每一步都精心设计</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.keyDerivationTitle')}</h2>
+          <p className="text-slate-400 text-lg">{t('landing.keyDerivationSub')}</p>
         </motion.div>
 
         <motion.div {...fadeUp} className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
@@ -383,12 +359,12 @@ function KeyDerivationDemo() {
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                 <Key className="w-8 h-8 text-emerald-400" />
               </div>
-              <p className="text-slate-400 mb-6">点击按钮，观看密码如何变成加密密钥</p>
+              <p className="text-slate-400 mb-6">{t('landing.kdDemoPrompt')}</p>
               <button
                 onClick={handleStart}
                 className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-xl transition-colors"
               >
-                开始演示
+                {t('landing.keyDerivationStart')}
               </button>
             </div>
           ) : (
@@ -437,12 +413,12 @@ function KeyDerivationDemo() {
                   animate={{ opacity: 1 }}
                   className="mt-4 p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-center"
                 >
-                  <p className="text-emerald-400 text-sm">密钥派生完成。你的每一条数据都使用独立密钥加密。</p>
+                  <p className="text-emerald-400 text-sm">{t('landing.keyDerivationDone')}</p>
                   <button
                     onClick={handleStart}
                     className="mt-3 text-xs text-emerald-400/70 hover:text-emerald-400 transition-colors"
                   >
-                    重新演示
+                    {t('landing.keyDerivationReplay')}
                   </button>
                 </motion.div>
               )}
@@ -455,6 +431,7 @@ function KeyDerivationDemo() {
 }
 
 function BruteForceCalculator() {
+  const { t } = useI18n()
   const [pw, setPw] = useState('')
   const strength = pw ? checkPasswordStrength(pw) : null
 
@@ -470,16 +447,16 @@ function BruteForceCalculator() {
     const guessesPerSecond = 1e12 // 1 trillion guesses/sec (modern GPU cluster)
     const seconds = combinations / guessesPerSecond
 
-    if (seconds < 1) return '不到1秒'
-    if (seconds < 60) return `${Math.round(seconds)}秒`
-    if (seconds < 3600) return `${Math.round(seconds / 60)}分钟`
-    if (seconds < 86400) return `${Math.round(seconds / 3600)}小时`
-    if (seconds < 86400 * 365) return `${Math.round(seconds / 86400)}天`
-    if (seconds < 86400 * 365 * 1e3) return `${Math.round(seconds / (86400 * 365))}年`
-    if (seconds < 86400 * 365 * 1e6) return `${(seconds / (86400 * 365 * 1e3)).toFixed(0)}千年`
-    if (seconds < 86400 * 365 * 1e9) return `${(seconds / (86400 * 365 * 1e6)).toFixed(0)}百万年`
-    if (seconds < 86400 * 365 * 1e12) return `${(seconds / (86400 * 365 * 1e9)).toFixed(0)}十亿年`
-    return '超过宇宙年龄'
+    if (seconds < 1) return t('landing.bruteForceInstant')
+    if (seconds < 60) return `${Math.round(seconds)} ${t('landing.bruteForceSeconds')}`
+    if (seconds < 3600) return `${Math.round(seconds / 60)} ${t('landing.bruteForceMinutes')}`
+    if (seconds < 86400) return `${Math.round(seconds / 3600)} ${t('landing.bruteForceHours')}`
+    if (seconds < 86400 * 365) return `${Math.round(seconds / 86400)} ${t('landing.bruteForceDays')}`
+    if (seconds < 86400 * 365 * 1e3) return `${Math.round(seconds / (86400 * 365))} ${t('landing.bruteForceYears')}`
+    if (seconds < 86400 * 365 * 1e6) return `${(seconds / (86400 * 365 * 1e3)).toFixed(0)} ${t('landing.bruteForceThousandYears')}`
+    if (seconds < 86400 * 365 * 1e9) return `${(seconds / (86400 * 365 * 1e6)).toFixed(0)} ${t('landing.bruteForceMillionYears')}`
+    if (seconds < 86400 * 365 * 1e12) return `${(seconds / (86400 * 365 * 1e9)).toFixed(0)} ${t('landing.bruteForceBillionYears')}`
+    return t('landing.bruteForceBeyond')
   }
 
   const bruteForceTime = pw ? calcBruteForceTime(pw) : null
@@ -488,19 +465,19 @@ function BruteForceCalculator() {
     <section className="py-24 px-6 bg-slate-900/30">
       <div className="max-w-3xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">暴力破解需要多久?</h2>
-          <p className="text-slate-400 text-lg">输入一个密码，看看黑客需要多长时间才能破解</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.bruteForceTitle')}</h2>
+          <p className="text-slate-400 text-lg">{t('landing.bruteForceSub')}</p>
         </motion.div>
 
         <motion.div {...fadeUp} className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
           <div className="space-y-6">
             <div>
-              <label className="text-sm text-slate-400 mb-2 block">测试密码</label>
+              <label className="text-sm text-slate-400 mb-2 block">{t('landing.bruteForceLabel')}</label>
               <input
                 type="text"
                 value={pw}
                 onChange={e => setPw(e.target.value)}
-                placeholder="输入密码测试强度..."
+                placeholder={t('landing.bruteForcePlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
@@ -509,7 +486,7 @@ function BruteForceCalculator() {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-400">强度</span>
+                    <span className="text-slate-400">{t('landing.bruteForceStrength')}</span>
                     <span style={{ color: strength.color }}>{strength.label}</span>
                   </div>
                   <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
@@ -523,24 +500,24 @@ function BruteForceCalculator() {
                 </div>
 
                 <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-700 text-center">
-                  <p className="text-xs text-slate-500 mb-2">暴力破解所需时间（假设每秒1万亿次猜测）</p>
+                  <p className="text-xs text-slate-500 mb-2">{t('landing.bruteForceTime')}</p>
                   <p className="text-3xl font-bold text-white">{bruteForceTime}</p>
                   <div className="mt-3 flex items-center justify-center gap-4 text-xs text-slate-500">
-                    <span>密码长度: {pw.length}位</span>
+                    <span>{t('landing.bruteForceLength')}: {pw.length}</span>
                     <span>|</span>
-                    <span>加上Argon2id: 时间x 65,536</span>
+                    <span>{t('landing.bruteForceArgon')}</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="p-3 rounded-lg bg-slate-800/50 text-center">
-                    <p className="text-slate-500 text-xs mb-1">密码长度</p>
-                    <p className="text-white font-medium">{pw.length} 个字符</p>
+                    <p className="text-slate-500 text-xs mb-1">{t('landing.bruteForceLength')}</p>
+                    <p className="text-white font-medium">{pw.length} {t('landing.bruteForceChars')}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-slate-800/50 text-center">
-                    <p className="text-slate-500 text-xs mb-1">字符集大小</p>
+                    <p className="text-slate-500 text-xs mb-1">{t('landing.bruteForceCharset')}</p>
                     <p className="text-white font-medium">
-                      {(/[a-z]/.test(pw) ? 26 : 0) + (/[A-Z]/.test(pw) ? 26 : 0) + (/[0-9]/.test(pw) ? 10 : 0) + (/[^a-zA-Z0-9]/.test(pw) ? 33 : 0)} 种
+                      {(/[a-z]/.test(pw) ? 26 : 0) + (/[A-Z]/.test(pw) ? 26 : 0) + (/[0-9]/.test(pw) ? 10 : 0) + (/[^a-zA-Z0-9]/.test(pw) ? 33 : 0)} {t('landing.bruteForceTypes')}
                     </p>
                   </div>
                 </div>
@@ -554,41 +531,42 @@ function BruteForceCalculator() {
 }
 
 function PricingSection() {
+  const { t, tArray } = useI18n()
   const plans = [
     {
       name: 'Free',
-      price: '免费',
+      price: t('landing.pricingFree'),
       period: '',
-      desc: '个人基础使用',
-      features: ['20条加密笔记', '10个密码存储', '1个守护人', '本地存储', '基础密码生成器'],
-      cta: '免费开始',
+      desc: t('landing.pricingFreeDesc'),
+      features: tArray('landing.pricingFreeFeatures'),
+      cta: t('landing.pricingFreeCta'),
       popular: false,
     },
     {
       name: 'Personal',
       price: '$4.99',
-      period: '/月',
-      desc: '个人全面保护',
-      features: ['无限笔记和密码', '5个守护人', '1GB文件存储', '云端加密同步', '5个时间胶囊', '密码安全审计'],
-      cta: '开始保护',
+      period: '/mo',
+      desc: t('landing.pricingPersonalDesc'),
+      features: tArray('landing.pricingPersonalFeatures'),
+      cta: t('landing.pricingPersonalCta'),
       popular: true,
     },
     {
       name: 'Family',
       price: '$9.99',
-      period: '/月',
-      desc: '家庭全面保护',
-      features: ['Personal全部功能', '5个家庭成员', '10GB文件存储', '无限时间胶囊', '紧急访问', '法律文档模板'],
-      cta: '保护家人',
+      period: '/mo',
+      desc: t('landing.pricingFamilyDesc'),
+      features: tArray('landing.pricingFamilyFeatures'),
+      cta: t('landing.pricingFamilyCta'),
       popular: false,
     },
     {
       name: 'Legacy',
       price: '$19.99',
-      period: '/月',
-      desc: '终极安全方案',
-      features: ['Family全部功能', '无限守护人', '无限存储', '律师公证服务', '24小时优先支持', '数字遗产顾问'],
-      cta: '终极保护',
+      period: '/mo',
+      desc: t('landing.pricingLegacyDesc'),
+      features: tArray('landing.pricingLegacyFeatures'),
+      cta: t('landing.pricingLegacyCta'),
       popular: false,
     },
   ]
@@ -597,8 +575,8 @@ function PricingSection() {
     <section id="pricing" className="py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">选择你的保护方案</h2>
-          <p className="text-slate-400 text-lg">永远免费起步，按需升级</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.pricingTitle')}</h2>
+          <p className="text-slate-400 text-lg">{t('landing.pricingSub')}</p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -617,7 +595,7 @@ function PricingSection() {
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-white text-xs font-medium rounded-full">
-                  最受欢迎
+                  {t('landing.pricingPopular')}
                 </div>
               )}
               <h3 className="text-lg font-semibold text-white mb-1">{plan.name}</h3>
@@ -650,17 +628,18 @@ function PricingSection() {
 }
 
 function TrustSection() {
+  const { t } = useI18n()
   const items = [
-    { icon: Github, title: '开源透明', desc: '核心加密代码开源，接受社区审查' },
-    { icon: ShieldCheck, title: '安全审计', desc: '第三方独立安全审计，报告公开可查' },
-    { icon: Fingerprint, title: '零知识架构', desc: '我们永远看不到你的数据，即使被迫也无法交出' },
+    { icon: Github, title: t('landing.trustOpenSource'), desc: t('landing.trustOpenSourceDesc') },
+    { icon: ShieldCheck, title: t('landing.trustAudit'), desc: t('landing.trustAuditDesc') },
+    { icon: Fingerprint, title: t('landing.trustZeroKnowledge'), desc: t('landing.trustZeroKnowledgeDesc') },
   ]
 
   return (
     <section id="trust" className="py-24 px-6 bg-slate-900/30">
       <div className="max-w-4xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">为什么信任 Legacy Vault</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.trustTitle')}</h2>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -695,19 +674,20 @@ function TrustSection() {
 }
 
 function FAQSection() {
+  const { t } = useI18n()
   const [open, setOpen] = useState<number | null>(null)
   const faqs = [
-    { q: '如果 Legacy Vault 公司倒闭了怎么办？', a: '你的数据始终用你自己的密码加密。我们会提前公开源码和数据导出工具，确保你永远可以访问自己的数据。本地存储的数据不受影响。' },
-    { q: '你们能看到我的数据吗？', a: '不能。Legacy Vault 采用零知识架构，你的数据在你的设备上加密后再存储。我们只存储密文，即使整个数据库泄露，也无法解读任何内容。' },
-    { q: '忘记密码怎么办？', a: '注册时会生成24个恢复词。用恢复词可以重置密码。但如果你同时丢失了密码和恢复词，数据将永久无法恢复——这是零知识架构的代价，也是安全的保证。' },
-    { q: '遗产传承如何防止误触发？', a: '采用5阶段渐进式确认，总时长不少于31天：定期确认 -> 多渠道提醒 -> 联系提醒人 -> 紧急联系人确认 -> 冷却等待期。任何阶段你重新响应都会立即取消流程。' },
+    { q: t('landing.faq1q'), a: t('landing.faq1a') },
+    { q: t('landing.faq2q'), a: t('landing.faq2a') },
+    { q: t('landing.faq3q'), a: t('landing.faq3a') },
+    { q: t('landing.faq4q'), a: t('landing.faq4a') },
   ]
 
   return (
     <section className="py-24 px-6">
       <div className="max-w-3xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">常见问题</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.faqTitle')}</h2>
         </motion.div>
 
         <div className="space-y-3">
@@ -748,27 +728,28 @@ function FAQSection() {
 }
 
 function CTASection({ onStart }: { onStart: () => void }) {
+  const { t } = useI18n()
   return (
     <section className="py-24 px-6">
       <motion.div
         {...fadeUp}
         className="max-w-4xl mx-auto text-center p-12 rounded-3xl bg-gradient-to-br from-emerald-950/50 to-slate-900/50 border border-emerald-500/20"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">现在开始，永远免费起步</h2>
-        <p className="text-slate-400 text-lg mb-8">为你最珍贵的一切，建立最安全的守护</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.ctaTitle')}</h2>
+        <p className="text-slate-400 text-lg mb-8">{t('landing.ctaSub')}</p>
         <button
           onClick={onStart}
           className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-2xl text-lg transition-all hover:shadow-lg hover:shadow-emerald-500/25 inline-flex items-center gap-2"
         >
-          开始保护
+          {t('landing.ctaBtn')}
           <ArrowRight className="w-5 h-5" />
         </button>
         <div className="mt-6 flex items-center justify-center gap-4 text-sm text-slate-500">
-          <span className="flex items-center gap-1"><Star className="w-3 h-3" /> 无需信用卡</span>
+          <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {t('landing.ctaNoCard')}</span>
           <span>|</span>
-          <span>5分钟完成设置</span>
+          <span>{t('landing.ctaSetupTime')}</span>
           <span>|</span>
-          <span>免费版永不过期</span>
+          <span>{t('landing.ctaForever')}</span>
         </div>
       </motion.div>
     </section>
@@ -776,6 +757,7 @@ function CTASection({ onStart }: { onStart: () => void }) {
 }
 
 function Footer() {
+  const { t } = useI18n()
   return (
     <footer className="border-t border-slate-800 py-8 px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -783,10 +765,10 @@ function Footer() {
           <Lock className="w-4 h-4 text-emerald-400" />
           <span className="text-sm">Legacy Vault</span>
           <span className="text-slate-600 text-sm">|</span>
-          <span className="text-xs text-slate-500">AES-256 零知识加密</span>
+          <span className="text-xs text-slate-500">{t('landing.footerEncryption')}</span>
         </div>
         <p className="text-xs text-slate-600">
-          你的数据，你的密钥，你的控制。
+          {t('landing.footerSlogan')}
         </p>
       </div>
     </footer>
@@ -794,6 +776,7 @@ function Footer() {
 }
 
 function SecurityWhitepaper({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n()
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -812,7 +795,7 @@ function SecurityWhitepaper({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-semibold text-white">安全白皮书</h3>
+            <h3 className="text-lg font-semibold text-white">{t('landing.whitepaperTitle')}</h3>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -824,14 +807,14 @@ function SecurityWhitepaper({ onClose }: { onClose: () => void }) {
           <div>
             <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
               <Layers className="w-5 h-5 text-emerald-400" />
-              加密层级架构
+              {t('landing.wpEncryptionTitle')}
             </h4>
             <div className="space-y-3">
               {[
-                { layer: '第1层', title: '主密码 + Argon2id', desc: '你的密码经过内存硬化算法处理，防止GPU暴力破解。65,536次迭代，256MB内存需求。', color: 'border-amber-500/30 bg-amber-950/20' },
-                { layer: '第2层', title: 'HKDF 密钥派生', desc: '从主密钥派生出多个子密钥，每个用途使用独立密钥。密钥之间数学独立。', color: 'border-blue-500/30 bg-blue-950/20' },
-                { layer: '第3层', title: 'AES-256-GCM 加密', desc: '每条数据使用独立密钥和随机IV加密。GCM模式提供认证加密，防篡改。', color: 'border-emerald-500/30 bg-emerald-950/20' },
-                { layer: '第4层', title: 'Shamir 秘密共享', desc: '主密钥可拆分为N份碎片，需要M份才能恢复。用于遗产传承的安全密钥分发。', color: 'border-purple-500/30 bg-purple-950/20' },
+                { layer: t('landing.wpLayer1'), title: t('landing.wpLayer1Title'), desc: t('landing.wpLayer1Desc'), color: 'border-amber-500/30 bg-amber-950/20' },
+                { layer: t('landing.wpLayer2'), title: t('landing.wpLayer2Title'), desc: t('landing.wpLayer2Desc'), color: 'border-blue-500/30 bg-blue-950/20' },
+                { layer: t('landing.wpLayer3'), title: t('landing.wpLayer3Title'), desc: t('landing.wpLayer3Desc'), color: 'border-emerald-500/30 bg-emerald-950/20' },
+                { layer: t('landing.wpLayer4'), title: t('landing.wpLayer4Title'), desc: t('landing.wpLayer4Desc'), color: 'border-purple-500/30 bg-purple-950/20' },
               ].map((item, i) => (
                 <div key={i} className={`p-4 rounded-xl border ${item.color}`}>
                   <div className="flex items-center gap-2 mb-1">
@@ -848,14 +831,14 @@ function SecurityWhitepaper({ onClose }: { onClose: () => void }) {
           <div>
             <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
               <Fingerprint className="w-5 h-5 text-emerald-400" />
-              零知识架构
+              {t('landing.wpZeroKnowledgeTitle')}
             </h4>
             <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
               <p className="text-sm text-slate-300 leading-relaxed mb-3">
-                <strong>通俗解释：</strong>想象你把日记锁在一个保险箱里，然后把保险箱存放在银行。银行保管保险箱，但没有钥匙——只有你有钥匙。即使银行被抢劫，劫匪拿到的也只是一个打不开的铁盒子。
+                {t('landing.wpZeroKnowledgeP1')}
               </p>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Legacy Vault的工作方式完全一样：你的数据在你的设备上用你的密码加密后，我们才接收和存储。我们永远只看到一堆无意义的密文。即使法院传唤、政府要求，我们也无法提供你的明文数据——因为我们从来就没有过。
+                {t('landing.wpZeroKnowledgeP2')}
               </p>
             </div>
           </div>
@@ -864,14 +847,14 @@ function SecurityWhitepaper({ onClose }: { onClose: () => void }) {
           <div>
             <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-400" />
-              Shamir 秘密共享
+              {t('landing.wpShamirTitle')}
             </h4>
             <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
               <p className="text-sm text-slate-300 leading-relaxed mb-3">
-                <strong>通俗解释：</strong>假设你有一张藏宝图，你把它撕成5份分给5个人。但你设定的规则是"任何3个人把碎片拼在一起就能看到完整的图"，少于3个碎片则完全无法还原——不是看到一部分，而是什么都看不到。
+                {t('landing.wpShamirP1')}
               </p>
               <p className="text-sm text-slate-300 leading-relaxed">
-                这就是Shamir秘密共享的数学魔法。Legacy Vault用它来实现遗产传承：你的加密密钥被拆分给多个守护人，只有足够数量的守护人联合才能恢复密钥，解密你的数据。
+                {t('landing.wpShamirP2')}
               </p>
             </div>
           </div>
@@ -880,42 +863,42 @@ function SecurityWhitepaper({ onClose }: { onClose: () => void }) {
           <div>
             <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-emerald-400" />
-              为什么连我们也看不到你的数据
+              {t('landing.wpWhyCantSeeTitle')}
             </h4>
             <div className="space-y-3">
               <div className="flex gap-4 items-start">
                 <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-emerald-400 text-sm font-bold">1</div>
                 <div>
-                  <p className="text-sm text-white">你输入密码</p>
-                  <p className="text-xs text-slate-400">密码只存在于你的设备内存中，不会发送到任何服务器</p>
+                  <p className="text-sm text-white">{t('landing.wpStep1Title')}</p>
+                  <p className="text-xs text-slate-400">{t('landing.wpStep1Desc')}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
                 <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-emerald-400 text-sm font-bold">2</div>
                 <div>
-                  <p className="text-sm text-white">设备本地加密</p>
-                  <p className="text-xs text-slate-400">你的数据在设备上用AES-256加密，变成密文</p>
+                  <p className="text-sm text-white">{t('landing.wpStep2Title')}</p>
+                  <p className="text-xs text-slate-400">{t('landing.wpStep2Desc')}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
                 <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-emerald-400 text-sm font-bold">3</div>
                 <div>
-                  <p className="text-sm text-white">密文上传服务器</p>
-                  <p className="text-xs text-slate-400">服务器只收到密文，没有密码，没有密钥</p>
+                  <p className="text-sm text-white">{t('landing.wpStep3Title')}</p>
+                  <p className="text-xs text-slate-400">{t('landing.wpStep3Desc')}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
                 <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-emerald-400 text-sm font-bold">4</div>
                 <div>
-                  <p className="text-sm text-white">解密只在你的设备</p>
-                  <p className="text-xs text-slate-400">下载密文后在本地解密。整个过程，服务器零参与</p>
+                  <p className="text-sm text-white">{t('landing.wpStep4Title')}</p>
+                  <p className="text-xs text-slate-400">{t('landing.wpStep4Desc')}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-center">
-            <p className="text-sm text-emerald-400">Legacy Vault: 你的数据，你的密钥，你的控制。</p>
+            <p className="text-sm text-emerald-400">{t('landing.wpFooter')}</p>
           </div>
         </div>
       </motion.div>

@@ -3,50 +3,52 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { KeyRound, Users, Timer, ArrowRight, X, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store'
-
-const steps = [
-  {
-    title: '欢迎来到 Legacy Vault',
-    desc: '你的军事级加密保险箱已就绪。让我们用3步快速了解核心功能。',
-    icon: Shield,
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/10',
-    highlight: null,
-    action: null,
-  },
-  {
-    title: '试试添加你的第一条密码',
-    desc: '密码管理器支持自动生成强密码、泄露检测、分类管理。所有密码都使用AES-256加密存储。',
-    icon: KeyRound,
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/10',
-    highlight: '/passwords',
-    action: '前往密码管理',
-  },
-  {
-    title: '设置你的第一个守护人',
-    desc: '守护人是你信任的人。你可以决定每位守护人能看到哪些内容，以及在什么条件下传递给他们。',
-    icon: Users,
-    color: 'text-blue-400',
-    bg: 'bg-blue-500/10',
-    highlight: '/inheritance',
-    action: '前往传承计划',
-  },
-  {
-    title: '写你的第一个时间胶囊',
-    desc: '给未来的自己或你爱的人写一封信。它会在你指定的时间安全送达。加密保存，只有到了时间才能打开。',
-    icon: Timer,
-    color: 'text-purple-400',
-    bg: 'bg-purple-500/10',
-    highlight: '/capsules',
-    action: '前往时间胶囊',
-  },
-]
+import { useI18n } from '../i18n'
 
 export default function OnboardingOverlay() {
   const [step, setStep] = useState(0)
   const navigate = useNavigate()
   const { setOnboardingComplete } = useStore()
+  const { t } = useI18n()
+
+  const steps = [
+    {
+      title: t('onboarding.welcomeTitle'),
+      desc: t('onboarding.welcomeDesc'),
+      icon: Shield,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      highlight: null,
+      action: null,
+    },
+    {
+      title: t('onboarding.step1Title'),
+      desc: t('onboarding.step1Desc'),
+      icon: KeyRound,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      highlight: '/passwords',
+      action: t('onboarding.step1Action'),
+    },
+    {
+      title: t('onboarding.step2Title'),
+      desc: t('onboarding.step2Desc'),
+      icon: Users,
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      highlight: '/inheritance',
+      action: t('onboarding.step2Action'),
+    },
+    {
+      title: t('onboarding.step3Title'),
+      desc: t('onboarding.step3Desc'),
+      icon: Timer,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
+      highlight: '/capsules',
+      action: t('onboarding.step3Action'),
+    },
+  ]
 
   const handleSkip = () => {
     setOnboardingComplete(true)
@@ -99,7 +101,7 @@ export default function OnboardingOverlay() {
               ))}
             </div>
             <button onClick={handleSkip} className="text-slate-500 hover:text-white transition-colors text-xs flex items-center gap-1">
-              跳过 <X className="w-3 h-3" />
+              {t('onboarding.skip')} <X className="w-3 h-3" />
             </button>
           </div>
 
@@ -132,9 +134,9 @@ export default function OnboardingOverlay() {
                 className={`w-full py-3 ${current.action ? 'bg-slate-800 hover:bg-slate-700' : 'bg-emerald-500 hover:bg-emerald-400'} text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2`}
               >
                 {step < steps.length - 1 ? (
-                  <>下一步 <ArrowRight className="w-4 h-4" /></>
+                  <>{t('onboarding.next')} <ArrowRight className="w-4 h-4" /></>
                 ) : (
-                  '开始使用'
+                  t('onboarding.getStarted')
                 )}
               </button>
             </div>
